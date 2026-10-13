@@ -2,18 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Map, MessageSquareQuote, Tractor, Users, Wrench } from "lucide-react";
+import { LayoutDashboard, LogOut, MessageSquareQuote, Tractor, Users, Wrench } from "lucide-react";
 import { useEffect } from "react";
 import { Brand } from "@/components/brand";
 import { useDemoAuth } from "@/lib/demo-state";
 
 const items = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/map", label: "Live map", icon: Map },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/equipment", label: "Equipment", icon: Tractor },
-  { href: "/admin/usage", label: "Who’s using what", icon: Wrench },
-  { href: "/admin/reviews", label: "Reviews", icon: MessageSquareQuote }
 ] as const;
 
 export function AdminShell({ children, title, mapDashboard = false }: { children: React.ReactNode; title: string; mapDashboard?: boolean }) {
