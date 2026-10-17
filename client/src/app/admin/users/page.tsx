@@ -16,7 +16,7 @@ export default function AdminUsersPage() {
                   <div className="font-medium text-white">{user.name}</div>
                   <div className="text-xs text-[#8ea39a]">{user.email}</div>
                 </div>
-                <span className="rounded-full bg-[#1f3b2d] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b7f0cb]">
+                <span className="rounded-full bg-[#1f3b2d] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#b7f0cb]">
                   {user.role}
                 </span>
               </div>

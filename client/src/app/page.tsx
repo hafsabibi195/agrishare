@@ -56,7 +56,7 @@ export default function HomePage() {
         {/* Hero */}
         <section className="relative overflow-hidden text-white">
           <div className="relative mx-auto grid max-w-[1440px] items-center gap-10 px-5 py-14 sm:py-20 lg:grid-cols-12 lg:px-12 lg:py-24">
-            <div className="space-y-6 lg:col-span-7">
+            <div className="text-on-photo space-y-6 lg:col-span-7">
               <span className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-wheat/40 bg-wheat/15 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-wheat">
                 <Leaf size={14} /> Farm equipment rental · Pakistan
               </span>
@@ -85,7 +85,7 @@ export default function HomePage() {
                       <span className="size-2.5 animate-pulse rounded-full bg-primary" />
                       Live regional map
                     </div>
-                    <span className="rounded-md border border-wheat/50 bg-wheat-soft px-2 py-0.5 text-[11px] font-extrabold text-[#7A5200]">
+                    <span className="rounded-md border border-wheat/50 bg-wheat-soft px-2 py-0.5 text-xs font-extrabold text-[#7A5200]">
                       {available} available now
                     </span>
                   </div>
@@ -97,10 +97,10 @@ export default function HomePage() {
 
         {/* Categories */}
         <section id="categories" className="mx-auto w-full max-w-[1440px] scroll-mt-28 space-y-10 px-5 py-16 lg:px-12 lg:py-20">
-          <div className="reveal mx-auto max-w-2xl space-y-2 text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#7A5200]">Agricultural equipment</p>
-            <h2 className="font-display text-3xl font-semibold sm:text-4xl">Rent popular farming machinery</h2>
-            <p className="text-sm text-muted sm:text-base">Choose from machinery listed by trusted farm owners in your district.</p>
+          <div className="reveal text-on-photo mx-auto max-w-2xl space-y-2 text-center">
+            <p className="text-xs font-bold uppercase tracking-widest text-wheat">Agricultural equipment</p>
+            <h2 className="font-display text-3xl font-semibold text-white sm:text-4xl">Rent popular farming machinery</h2>
+            <p className="text-sm text-white/80 sm:text-base">Choose from machinery listed by trusted farm owners in your district.</p>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((item, index) => (
@@ -124,7 +124,7 @@ export default function HomePage() {
         </section>
 
         {/* How it works */}
-        <section id="how" className="scroll-mt-28 border-y border-[#CFE0C6] bg-primary-soft/70 px-5 py-16 lg:px-12 lg:py-20">
+        <section id="how" className="scroll-mt-28 border-y border-[#CFE0C6] bg-primary-soft/95 px-5 py-16 lg:px-12 lg:py-20">
           <div className="mx-auto max-w-[1440px] space-y-12">
             <div className="reveal mx-auto max-w-xl space-y-2 text-center">
               <p className="text-xs font-bold uppercase tracking-wider text-[#7A5200]">Simple 3-step process</p>

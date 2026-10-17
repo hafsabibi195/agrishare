@@ -280,7 +280,7 @@ export default function DashboardPage() {
         <div className="relative flex flex-col gap-6 p-6 sm:p-9 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">
             <p className="inline-flex items-center gap-2 rounded-full border border-[#E3B04B]/40 bg-[#E3B04B]/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#F2CD7A]"><Wheat size={14}/>Rabi season · wheat sowing</p>
-            <h1 className="mt-4 font-display text-3xl font-semibold sm:text-[42px] sm:leading-[1.1]">Welcome{firstName ? `, ${firstName}` : ""}</h1>
+            <h1 className="mt-4 font-display text-3xl font-semibold sm:text-[2.625rem] sm:leading-[1.1]">Welcome{firstName ? `, ${firstName}` : ""}</h1>
             <p className="mt-2 text-base text-[#DCE7D6] sm:text-lg">List your machinery for rent, or find equipment near your fields.</p>
           </div>
           <div className="grid grid-cols-3 gap-3 sm:min-w-[420px]">
@@ -288,7 +288,7 @@ export default function DashboardPage() {
               { label: "Available nearby", value: availableCount, icon: Tractor },
               { label: "Your listings", value: myListings, icon: Sprout },
               { label: "Categories", value: categories.length, icon: Leaf }
-            ].map(({ label, value, icon: Icon }) => <div key={label} className="rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur"><Icon size={18} className="text-[#F2CD7A]"/><p className="mt-2 font-display text-2xl font-semibold">{value}</p><p className="text-[11px] leading-4 text-[#DCE7D6]">{label}</p></div>)}
+            ].map(({ label, value, icon: Icon }) => <div key={label} className="rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur"><Icon size={18} className="text-[#F2CD7A]"/><p className="mt-2 font-display text-2xl font-semibold">{value}</p><p className="text-xs leading-4 text-[#DCE7D6]">{label}</p></div>)}
           </div>
         </div>
       </section>
@@ -308,7 +308,7 @@ export default function DashboardPage() {
 
       <div className="grid items-start gap-6 xl:grid-cols-[1.5fr_1fr] xl:gap-7">
         <section className="flex flex-col gap-6 overflow-hidden rounded-2xl border border-[#E2DCCB] bg-white p-5 shadow-[0_18px_48px_rgba(30,42,31,0.09)] sm:p-7 lg:p-8" aria-labelledby="listing-heading">
-          <div className="-mx-5 -mt-5 flex items-center gap-4 border-b border-[#E2DCCB] bg-[#E4EDDF] px-5 py-4 sm:-mx-7 sm:-mt-7 sm:px-7 lg:-mx-8 lg:-mt-8 lg:px-8"><span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#2E5E3A] text-white"><Tractor size={24}/></span><div><p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7A5200]">Option 1 · For owners</p><h2 id="listing-heading" className="mt-0.5 font-display text-2xl font-semibold sm:text-[28px]">List your equipment for rent</h2></div></div>
+          <div className="-mx-5 -mt-5 flex items-center gap-4 border-b border-[#E2DCCB] bg-[#E4EDDF] px-5 py-4 sm:-mx-7 sm:-mt-7 sm:px-7 lg:-mx-8 lg:-mt-8 lg:px-8"><span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#2E5E3A] text-white"><Tractor size={24}/></span><div><p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7A5200]">Option 1 · For owners</p><h2 id="listing-heading" className="mt-0.5 font-display text-2xl font-semibold sm:text-3xl">List your equipment for rent</h2></div></div>
           <form onSubmit={publishListing} className="flex flex-col gap-6">
             <section className="flex flex-col gap-3" aria-labelledby="location-heading">
               <h3 id="location-heading" className="flex items-center gap-2 text-base font-bold"><StepDot n={1}/>Location</h3>
@@ -325,14 +325,14 @@ export default function DashboardPage() {
                     <label className="sr-only" htmlFor="listing-location">Search location</label>
                     <input id="listing-location" type="text" value={location} autoComplete="off" role="combobox" aria-autocomplete="list" aria-controls="location-suggestions" aria-expanded={locationSuggestions.length > 0} onChange={(event) => { setLocation(event.target.value); setLocationMode("search"); setCoordinates(null); setLocationSuggestions([]); setLocationMessage(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (locationSuggestions[0]) { const first = locationSuggestions[0]; setCoordinates({ lat: Number(first.lat), lng: Number(first.lon) }); setLocation(getPlaceLabel(first)); setLocationSuggestions([]); setLocationMessage("Location found and pinned on the map."); } else { void searchLocation(); } } }} placeholder="Enter a town, village, or address" className="h-11 w-full min-w-0 rounded-lg border border-[#C9C1A9] bg-white px-3 text-sm outline-none focus:border-[#2E5E3A]"/>
                     {(locationSuggestions.length > 0 || isSuggestingLocation || suggestionMessage) && <div id="location-suggestions" role="listbox" aria-label="Location suggestions" className="absolute inset-x-0 top-[calc(100%+4px)] z-[700] max-h-56 overflow-y-auto rounded-lg border border-[#D6CFBB] bg-white py-1 shadow-lg">
-                      {isSuggestingLocation && <p role="status" className="px-3 py-2 text-xs text-[#5B6457]">Searching places…</p>}
+                      {isSuggestingLocation && <p role="status" className="px-3 py-2 text-xs text-muted">Searching places…</p>}
                       {locationSuggestions.map((place) => <button key={place.place_id} type="button" role="option" aria-selected="false" onClick={() => { setCoordinates({ lat: Number(place.lat), lng: Number(place.lon) }); setLocation(getPlaceLabel(place)); setLocationSuggestions([]); setSuggestionMessage(""); setLocationMessage("Location found and pinned on the map."); }} className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm hover:bg-[#F5F1E6]"><MapPin size={15} className="mt-0.5 shrink-0 text-[#2E5E3A]"/><span className="line-clamp-2">{place.display_name}</span></button>)}
-                      {!isSuggestingLocation && suggestionMessage && <p role="status" className="px-3 py-2 text-xs text-[#5B6457]">{suggestionMessage}</p>}
+                      {!isSuggestingLocation && suggestionMessage && <p role="status" className="px-3 py-2 text-xs text-muted">{suggestionMessage}</p>}
                     </div>}
                   </div>
                   <button type="button" aria-label="Search location" onClick={() => void searchLocation()} disabled={isSearchingLocation} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-lg bg-[#2E5E3A] px-3 text-sm font-semibold text-white hover:bg-[#1F4429] disabled:opacity-60"><Search size={16}/><span className="hidden sm:inline">{isSearchingLocation ? "Searching" : "Search"}</span></button>
                 </div>
-                {locationMessage && <span role="status" className="text-xs text-[#5B6457]">{locationMessage}</span>}
+                {locationMessage && <span role="status" className="text-xs text-muted">{locationMessage}</span>}
               </div>
             </section>
 
@@ -360,7 +360,7 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {photos.map((photo, index) => <div key={index} className="relative aspect-[4/3] overflow-hidden rounded-xl border border-[#E2DCCB] bg-[#F1EDE0]">
                   <img src={photo} alt={`Equipment photo ${index + 1}`} className="size-full object-cover"/>
-                  {index === 0 && <span className="absolute left-1.5 top-1.5 rounded-full bg-[#2E5E3A] px-2 py-0.5 text-[10px] font-bold text-white">Cover</span>}
+                  {index === 0 && <span className="absolute left-1.5 top-1.5 rounded-full bg-[#2E5E3A] px-2 py-0.5 text-xs font-bold text-white">Cover</span>}
                   <button type="button" onClick={() => setPhotos((current) => current.filter((_, photoIndex) => photoIndex !== index))} aria-label={`Remove photo ${index + 1}`} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-black/60 text-white hover:bg-black/80"><X size={14}/></button>
                 </div>)}
                 {photos.length < MAX_LISTING_PHOTOS && <label className={`flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#C9C1A9] bg-[#FBF9F2] text-center text-xs font-semibold text-[#3E4A3C] transition hover:border-[#2E5E3A] hover:text-[#2E5E3A] ${isProcessingPhotos ? "pointer-events-none opacity-60" : ""}`}>
@@ -368,12 +368,12 @@ export default function DashboardPage() {
                   <input type="file" accept="image/*" multiple onChange={(event) => void addPhotos(event)} className="sr-only"/>
                 </label>}
               </div>
-              <span className="text-xs text-[#5B6457]">{photoMessage || `Optional. Up to ${MAX_LISTING_PHOTOS} photos; the first one is shown as the cover.`}</span>
+              <span className="text-xs text-muted">{photoMessage || `Optional. Up to ${MAX_LISTING_PHOTOS} photos; the first one is shown as the cover.`}</span>
             </section>
 
             <section className="flex flex-col gap-2 rounded-xl border border-dashed border-[#C9C1A9] bg-[#FBF9F2] p-4" aria-labelledby="contact-heading">
               <h3 id="contact-heading" className="text-sm font-bold">Contact information</h3>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold">Contact number<input name="contactPhone" type="tel" defaultValue={user?.phone ?? ""} placeholder="e.g. +92 300 1234567" autoComplete="tel" required className="h-12 rounded-[10px] border border-[#C9C1A9] bg-white px-3.5 text-sm font-medium outline-none focus:border-[#2E5E3A]"/><span className="inline-flex items-center gap-1.5 text-xs font-normal text-[#5B6457]"><Phone size={14} className="text-[#2E5E3A]"/>Farmers can use this number to contact you about the listing.</span></label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold">Contact number<input name="contactPhone" type="tel" defaultValue={user?.phone ?? ""} placeholder="e.g. +92 300 1234567" autoComplete="tel" required className="h-12 rounded-[10px] border border-[#C9C1A9] bg-white px-3.5 text-sm font-medium outline-none focus:border-[#2E5E3A]"/><span className="inline-flex items-center gap-1.5 text-xs font-normal text-muted"><Phone size={14} className="text-[#2E5E3A]"/>Farmers can use this number to contact you about the listing.</span></label>
             </section>
 
             {error && <p role="alert" className="text-sm font-medium text-red-700">{error}</p>}
@@ -393,7 +393,7 @@ export default function DashboardPage() {
             <div className="p-5">
               <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#7A5200]"><CloudSun size={14}/>Season tip</p>
               <h2 id="season-heading" className="mt-1.5 font-display text-xl font-semibold">Plan ahead for harvest</h2>
-              <p className="mt-1.5 text-sm leading-6 text-[#5B6457]">Harvesters book out fast in April and October. Contact owners two weeks before your crop is ready.</p>
+              <p className="mt-1.5 text-sm leading-6 text-muted">Harvesters book out fast in April and October. Contact owners two weeks before your crop is ready.</p>
             </div>
           </section>
         </div>

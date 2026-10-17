@@ -7,15 +7,16 @@ import { useDemoAuth } from "@/lib/demo-state";
 export function AdminRouteGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { auth } = useDemoAuth();
+  const { auth, hydrated } = useDemoAuth();
   const [checked, setChecked] = useState(false);
   const isLoginPage = pathname === "/admin/login";
   const isAdmin = auth.currentUser?.role === "admin";
 
   useEffect(() => {
+    if (!hydrated) return;
     setChecked(true);
     if (!isLoginPage && !isAdmin) router.replace("/admin/login");
-  }, [isAdmin, isLoginPage, router]);
+  }, [hydrated, isAdmin, isLoginPage, router]);
 
   if (isLoginPage) return children;
   if (!checked || !isAdmin) {

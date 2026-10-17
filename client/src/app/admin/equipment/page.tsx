@@ -25,7 +25,7 @@ export default function AdminEquipmentPage() {
                     <div className="font-medium text-white">{equipment.title}</div>
                     <div className="text-sm text-[#8ea39a]">{equipment.city} • {equipment.category}</div>
                   </div>
-                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${equipment.status === "rented" ? statusColor.rented : statusColor.available}`}>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${equipment.status === "rented" ? statusColor.rented : statusColor.available}`}>
                     {equipment.status === "rented" ? "In use" : "Available"}
                   </span>
                 </div>

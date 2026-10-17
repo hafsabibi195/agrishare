@@ -278,11 +278,11 @@ export default function AdminEquipmentMap() {
           {placeResults.length > 0 && <div className="mt-1 max-h-48 overflow-y-auto rounded-lg border border-[#deddd3] bg-white p-1 shadow-lg">{placeResults.map((result) => <button key={`${result.lat}-${result.lon}`} type="button" onClick={() => handlePlaceChoice(result)} className="block w-full rounded-md px-2 py-2 text-left text-xs text-[#334138] hover:bg-[#f4f3ed]">{result.display_name}</button>)}</div>}
         </div>
 
-        <div className="pointer-events-none absolute bottom-4 left-4 z-[500] rounded-xl bg-white/90 px-3 py-2 text-[10px] font-medium text-slate-700 shadow-sm">
+        <div className="pointer-events-none absolute bottom-4 left-4 z-[500] rounded-xl bg-white/90 px-3 py-2 text-xs font-medium text-slate-700 shadow-sm">
           © OpenStreetMap contributors
         </div>
 
-        <div className="absolute bottom-3 left-3 z-[500] rounded-lg border border-white/80 bg-white/95 p-2.5 text-[10px] text-[#334138] shadow-sm">
+        <div className="absolute bottom-3 left-3 z-[500] rounded-lg border border-white/80 bg-white/95 p-2.5 text-xs text-[#334138] shadow-sm">
           <div className="mb-1.5 font-bold uppercase tracking-wide">Show on map</div>
           <div className="space-y-1.5">
             <label className="flex items-center gap-2"><input type="checkbox" checked={showEquipment} onChange={() => setShowEquipment((current) => !current)} className="accent-[#2e5e3a]"/><span className="size-2 rounded-sm bg-[#17643a]"/>Available equipment</label>
@@ -297,7 +297,7 @@ export default function AdminEquipmentMap() {
         <section>
           <h3 className="text-sm font-bold text-[#1e2a1f]">In use now</h3>
           <div className="mt-2 divide-y divide-[#e5e1d5]">
-            {data.equipment.filter((item) => item.status === "rented").slice(0, 5).map((item) => <button key={item.id} type="button" onClick={() => { setFollowUserId(null); setSelectedTarget([item.location.lat, item.location.lng]); markerRefs.current[item.id]?.openPopup(); }} className="block w-full py-2 text-left hover:bg-[#f7f6f0]"><span className="block truncate text-xs font-bold text-[#26352b]">{item.title}</span><span className="mt-0.5 block truncate text-[10px] text-[#697267]">Used by {item.ownerName} · {item.city}</span></button>)}
+            {data.equipment.filter((item) => item.status === "rented").slice(0, 5).map((item) => <button key={item.id} type="button" onClick={() => { setFollowUserId(null); setSelectedTarget([item.location.lat, item.location.lng]); markerRefs.current[item.id]?.openPopup(); }} className="block w-full py-2 text-left hover:bg-[#f7f6f0]"><span className="block truncate text-xs font-bold text-[#26352b]">{item.title}</span><span className="mt-0.5 block truncate text-xs text-[#697267]">Used by {item.ownerName} · {item.city}</span></button>)}
             {data.equipment.every((item) => item.status !== "rented") && <p className="py-2 text-xs text-[#697267]">No equipment in use.</p>}
           </div>
         </section>
@@ -316,7 +316,7 @@ export default function AdminEquipmentMap() {
             >
               <span className="min-w-0">
                 <span className="block truncate text-xs font-bold text-[#26352b]">{location.name}</span>
-                <span className="block text-[10px] capitalize text-[#697267]">{location.role} · {formatAge(location.updatedAt)}</span>
+                <span className="block text-xs capitalize text-[#697267]">{location.role} · {formatAge(location.updatedAt)}</span>
               </span>
               <span className="size-2 shrink-0 rounded-full bg-[#2E6FB0]" aria-label="Live" />
             </button>

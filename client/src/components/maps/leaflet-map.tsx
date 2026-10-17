@@ -139,8 +139,8 @@ export default function LeafletMap({
         {onMapClick && <MapPicker onMapClick={onMapClick} />}
         <LocateControl onMessage={setMessage} onLocated={(point) => onLocationChange?.(point)} />
       </MapContainer>
-      {onMapClick && <div className="pointer-events-none absolute left-1/2 top-2 z-[500] -translate-x-1/2 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-primary-deep shadow">Click the map to pick a location</div>}
-      {!compact && <div className="absolute bottom-2 left-2 z-[500] rounded-md bg-white/90 px-2 py-1 text-[10px] text-muted">© OpenStreetMap contributors</div>}
+      {onMapClick && <div className="pointer-events-none absolute left-1/2 top-2 z-[500] -translate-x-1/2 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-primary-deep shadow">Click the map to pick a location</div>}
+      {!compact && <div className="absolute bottom-2 left-2 z-[500] rounded-md bg-white/90 px-2 py-1 text-xs text-muted">© OpenStreetMap contributors</div>}
       {message && <div role="status" className="absolute bottom-5 left-5 z-[500] max-w-[240px] rounded-lg bg-white px-3 py-2 text-xs shadow-panel">{message}</div>}
       {compact && <div className="pointer-events-none absolute right-4 top-4 z-[500] rounded-full bg-white px-3 py-2 text-xs font-bold shadow">Punjab · Pakistan</div>}
     </div>

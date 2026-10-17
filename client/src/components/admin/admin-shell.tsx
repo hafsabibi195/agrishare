@@ -16,13 +16,14 @@ const items = [
 export function AdminShell({ children, title, mapDashboard = false }: { children: React.ReactNode; title: string; mapDashboard?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { auth, logout } = useDemoAuth();
+  const { auth, hydrated, logout } = useDemoAuth();
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!auth.currentUser || auth.currentUser.role !== "admin") {
       router.push("/admin/login");
     }
-  }, [auth.currentUser, router]);
+  }, [auth.currentUser, hydrated, router]);
 
   return (
     <div className={`min-h-screen ${mapDashboard ? "bg-agri text-[#1e2a1f]" : "bg-agri-dark text-[#edf3ee]"}`}>
@@ -57,7 +58,7 @@ export function AdminShell({ children, title, mapDashboard = false }: { children
             <div className="flex items-center gap-4"><span className="hidden text-xs text-[#a8c2b2] sm:inline">Live admin session</span><button type="button" onClick={() => { logout(); router.push("/admin/login"); }} className="inline-flex items-center gap-2 rounded-lg border border-[#54705e] px-3 py-2 text-xs font-semibold text-white hover:bg-[#20362a]"><LogOut size={14}/>Log out</button></div>
           </> : <>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9fd4ae]">Administration</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9fd4ae]">Administration</p>
             <h1 className="mt-1 text-xl font-semibold text-white">{title}</h1>
           </div>
 

@@ -19,7 +19,7 @@ export function EquipmentPhoto({ equipment, className }: { equipment: Pick<Equip
   return <>
     <button type="button" onClick={() => setOpenIndex(0)} aria-label={`View photos of ${equipment.title}`} className={`relative block shrink-0 overflow-hidden ${className ?? ""}`}>
       <img src={photos[0]} alt={equipment.title} loading="lazy" className="size-full object-cover transition duration-300 hover:scale-105" />
-      {photos.length > 1 && <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white"><Images size={11} />{photos.length}</span>}
+      {photos.length > 1 && <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-0.5 text-xs font-bold text-white"><Images size={11} />{photos.length}</span>}
     </button>
     {openIndex !== null && createPortal(<PhotoViewer title={equipment.title} photos={photos} index={openIndex} onIndexChange={setOpenIndex} onClose={() => setOpenIndex(null)} />, document.body)}
   </>;

@@ -52,7 +52,7 @@ export default function AdminOverviewPage() {
                     <div className="font-medium text-white">{equipment.title}</div>
                     <div className="text-xs text-[#8ea39a]">{equipment.city}</div>
                   </div>
-                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${statusColor[equipment.status]}`}>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${statusColor[equipment.status]}`}>
                     {equipment.status}
                   </span>
                 </div>

@@ -63,7 +63,7 @@ export function DashboardFrame({ children }: { children: (state: { user: ReturnT
           {!user && <div role="status" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-wheat/50 bg-wheat-soft px-4 py-3 text-sm text-[#624A14]"><span>{error}. Sign in to view your dashboard.</span><Link href="/login" className="font-bold underline">Log in</Link></div>}
           {children({ user, role, loading, error })}
         </main>
-        <footer className="flex items-center justify-between border-t border-border bg-background-paper/80 px-5 py-5 text-xs text-muted sm:px-8"><span>© 2026 AgriShare Pakistan</span><Link href="/admin/login" className="hover:text-primary">Admin portal</Link></footer>
+        <footer className="flex items-center justify-between border-t border-border bg-background-paper/95 px-5 py-5 text-xs text-muted sm:px-8"><span>© 2026 AgriShare Pakistan</span><Link href="/admin/login" className="hover:text-primary">Admin portal</Link></footer>
       </div>
     </div>
   );

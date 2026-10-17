@@ -9,7 +9,7 @@ export function Brand({ dark = false, admin = false, className }: { dark?: boole
         <Leaf aria-hidden="true" size={20} strokeWidth={2} />
       </span>
       <span className={cn("font-display text-2xl font-semibold", dark && "text-white")}>AgriShare</span>
-      {admin && <span className="ml-1 rounded-md border border-[#2C3D31] bg-[#1C2A21] px-2 py-1 text-[10px] font-bold tracking-[0.08em] text-[#8FCB9F]">ADMIN</span>}
+      {admin && <span className="ml-1 rounded-md border border-[#2C3D31] bg-[#1C2A21] px-2 py-1 text-xs font-bold tracking-[0.08em] text-[#8FCB9F]">ADMIN</span>}
     </Link>
   );
 }

@@ -12,7 +12,7 @@ const navLinks = [
 export function PublicNav() {
   return (
     <header className="sticky top-0 z-[1000] border-b border-border bg-background-paper/90 backdrop-blur-md">
-      <div className="hidden bg-primary-deep text-[11px] font-semibold text-wheat-soft sm:block">
+      <div className="hidden bg-primary-deep text-xs font-semibold text-wheat-soft sm:block">
         <div className="mx-auto flex h-8 max-w-[1440px] items-center justify-between px-5 lg:px-12">
           <span className="inline-flex items-center gap-1.5"><Wheat size={13} className="text-wheat" />Rabi season is here: book wheat sowing equipment early</span>
           <span className="inline-flex items-center gap-1.5"><Sprout size={13} className="text-wheat" />Punjab · Sindh · KPK · Balochistan</span>

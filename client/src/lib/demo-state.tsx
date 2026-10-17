@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { adminStats, demoBookings, demoEquipment, demoReviews, demoUsers, type Booking, type DemoUser, type Equipment, type Review } from "@/data/sampleData";
 
 const AUTH_STORAGE_KEY = "agrishare-demo-auth";
@@ -23,6 +23,8 @@ interface DemoDataState {
 }
 
 interface DemoContextValue {
+  /** False until saved auth/data have been read from localStorage after mount. */
+  hydrated: boolean;
   auth: DemoAuthState;
   data: DemoDataState;
   login: (email: string, password: string, target?: DemoRoleTarget) => { requiresTwoFactor: boolean; user?: DemoUser };
@@ -96,13 +98,29 @@ function getDemoUsers(): DemoUser[] {
   return [...demoUsers, ...readRegisteredUsers()];
 }
 
+// useLayoutEffect warns during server rendering; it only matters in the browser.
+const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+const emptyAuth: DemoAuthState = { currentUser: null, pendingLoginEmail: null, lastActivityAt: null };
+const seedData: DemoDataState = { equipment: demoEquipment, bookings: demoBookings, reviews: demoReviews, adminStats };
+
 export function DemoProvider({ children }: { children: React.ReactNode }) {
-  const [auth, setAuth] = useState<DemoAuthState>(readStoredAuth);
-  const [data, setData] = useState<DemoDataState>(readStoredData);
+  // Start from the same state the server rendered, then load what this browser saved.
+  // Reading localStorage during the first render causes hydration mismatches.
+  const [auth, setAuth] = useState<DemoAuthState>(emptyAuth);
+  const [data, setData] = useState<DemoDataState>(seedData);
+  const [hydrated, setHydrated] = useState(false);
+
+  useBrowserLayoutEffect(() => {
+    setAuth(readStoredAuth());
+    setData(readStoredData());
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
-  }, [auth]);
+  }, [auth, hydrated]);
 
   useEffect(() => {
     if (auth.currentUser?.role !== "admin") return;
@@ -132,13 +150,14 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   }, [auth.currentUser?.role]);
 
   useEffect(() => {
+    if (!hydrated) return;
     try {
       window.localStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
       // Photos can push the demo data past the browser's storage quota.
       console.warn("Could not save AgriShare data locally.", error);
     }
-  }, [data]);
+  }, [data, hydrated]);
 
   const login = (email: string, password: string, target: DemoRoleTarget = "user") => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -232,6 +251,7 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   };
 
   const value = useMemo<DemoContextValue>(() => ({
+    hydrated,
     auth,
     data,
     login,
@@ -241,7 +261,7 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
     updateBookingStatus,
     updateEquipmentStatus,
     addEquipment
-  }), [auth, data]);
+  }), [auth, data, hydrated]);
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;
 }

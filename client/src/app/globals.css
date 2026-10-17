@@ -8,6 +8,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* 19px base: every rem-based size (text, spacing) scales up */
+  font-size: 118.75%;
 }
 
 body {
@@ -68,7 +70,7 @@ textarea {
 
 /* Same field photo, darkened so light text stays readable */
 .bg-agri-dark {
-  background-color: rgba(15, 23, 20, 0.82);
+  background-color: rgba(15, 23, 20, 0.6);
 }
 
 /* Rolling green field hills fixed along the bottom of the viewport */
@@ -97,8 +99,10 @@ textarea {
   inset: -24px;
   z-index: -1;
   pointer-events: none;
-  background: #EEF3E6 url("/images/web/field-bg.jpg") center / cover no-repeat;
-  filter: blur(4px);
+  background:
+    linear-gradient(rgba(10, 18, 12, 0.62), rgba(10, 18, 12, 0.62)),
+    #1E2A1F url("/images/web/field-bg.jpg") center / cover no-repeat;
+  filter: blur(6px);
 }
 
 /* Page entrance and scroll animations */
@@ -148,4 +152,14 @@ textarea {
 
 @media (prefers-reduced-motion: reduce) {
   .page-enter { animation: none; }
+}
+
+/* Soft shadow for light text placed directly on the background photo */
+.text-on-photo {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Form controls and cards inside keep crisp, unshadowed text */
+.text-on-photo :is(input, textarea, select, button, a.bg-white, .bg-white) {
+  text-shadow: none;
 }
