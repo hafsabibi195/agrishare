@@ -8,8 +8,8 @@
 
 html {
   scroll-behavior: smooth;
-  /* 19px base: every rem-based size (text, spacing) scales up */
-  font-size: 118.75%;
+  /* 18px base: all rem-based text (and spacing) scales up together */
+  font-size: 112.5%;
 }
 
 body {
@@ -163,3 +163,4 @@ textarea {
 .text-on-photo :is(input, textarea, select, button, a.bg-white, .bg-white) {
   text-shadow: none;
 }
+

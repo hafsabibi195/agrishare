@@ -14,12 +14,6 @@ const config: Config = {
         danger: { DEFAULT: "#A33A2B", soft: "#F6E1DD" },
         info: { DEFAULT: "#2B5C8A", soft: "#E0EAF4" }
       },
-      // Slightly larger small sizes so helper text stays readable.
-      fontSize: {
-        // With the 19px root: xs ≈ 16px, sm ≈ 18px
-        xs: ["0.8421rem", { lineHeight: "1.25rem" }],
-        sm: ["0.9474rem", { lineHeight: "1.4rem" }]
-      },
       fontFamily: {
         sans: ["var(--font-dm-sans)", "sans-serif"],
         display: ["var(--font-fraunces)", "serif"]
