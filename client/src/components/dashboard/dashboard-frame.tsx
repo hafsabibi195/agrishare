@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, CalendarDays, LayoutDashboard, LogOut, MapPin, Menu, Search, ShieldCheck, Tractor, UserRound } from "lucide-react";
+import { Bell, CalendarDays, LayoutDashboard, LogOut, MapPin, Menu, Search, Tractor, UserRound, Wheat } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { Badge } from "@/components/ui/badge";
 import { useDemoAuth } from "@/lib/demo-state";
 import { LiveLocationControl } from "@/components/live-location-control";
+import { farmImages } from "@/lib/equipment-images";
 
 type DashboardRole = "farmer" | "owner";
 
@@ -38,18 +39,18 @@ export function DashboardFrame({ children }: { children: (state: { user: ReturnT
 
   const links = role === "owner" ? ownerLinks : farmerLinks;
   return (
-    <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-border bg-background-paper px-4 pb-5 lg:flex">
+    <div className="bg-agri agri-fields min-h-screen">
+      <aside className="fixed inset-y-0 left-0 z-[1001] hidden w-[248px] flex-col border-r border-border bg-background-paper px-4 pb-5 lg:flex">
         <div className="flex h-[72px] items-center px-2"><Brand /></div>
         <Badge variant={role === "owner" ? "blue" : "amber"} className="mx-2 mb-4 self-start">{role === "owner" ? "Owner account" : "Farmer account"}</Badge>
         <nav className="flex flex-col gap-1">{links.map(([label, href, Icon], index) => <Link key={label} href={href} className={`flex h-11 items-center gap-3 rounded-[10px] px-3 text-sm transition ${index === 0 ? "bg-primary-soft font-bold text-primary" : "text-[#3E4A3C] hover:bg-primary-soft"}`}><Icon size={19} strokeWidth={1.8}/>{label}</Link>)}</nav>
         <div className="mt-auto space-y-4">
-          <div className="rounded-xl border border-border bg-white p-3.5">{user?.twoFactorEnabled ? <><div className="flex items-center gap-2 text-sm font-bold"><ShieldCheck size={18} className="text-primary"/>2FA is on</div><p className="mt-1 text-xs text-muted">Your account is protected.</p></> : <><div className="text-sm font-bold">Account security</div><p className="mt-1 text-xs text-muted">Enable 2FA in account settings.</p></>}</div>
+          <div className="overflow-hidden rounded-xl border border-border bg-white"><img src={farmImages.harvester} alt="" aria-hidden="true" className="h-20 w-full object-cover"/><div className="p-3.5"><div className="flex items-center gap-2 text-sm font-bold"><Wheat size={16} className="text-wheat"/>Rabi season</div><p className="mt-1 text-xs leading-5 text-muted">Wheat sowing is underway. Book tractors and rotavators early.</p></div></div>
           <Link href="/admin/login" className="block px-2 text-xs text-muted hover:text-primary">Admin portal →</Link>
         </div>
       </aside>
       <div className="lg:pl-[248px]">
-        <header className="sticky top-0 z-20 flex h-[72px] items-center gap-4 border-b border-border bg-background-paper/95 px-4 backdrop-blur sm:px-7">
+        <header className="sticky top-0 z-[1000] flex h-[72px] items-center gap-4 border-b border-border bg-background-paper/95 px-4 backdrop-blur sm:px-7">
           <Brand className="lg:hidden" />
           <label className="hidden h-11 w-full max-w-[380px] items-center gap-2.5 rounded-[10px] border border-border-strong bg-white px-3.5 text-muted sm:flex"><Search size={17}/><input aria-label="Search" placeholder={role === "owner" ? "Search requests, equipment…" : "Search tractors, sprayers…"} className="min-w-0 flex-1 bg-transparent text-sm text-primary-deep outline-none placeholder:text-muted" /></label>
           {user && <div className="hidden lg:block"><LiveLocationControl compact /></div>}
@@ -62,7 +63,7 @@ export function DashboardFrame({ children }: { children: (state: { user: ReturnT
           {!user && <div role="status" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-wheat/50 bg-wheat-soft px-4 py-3 text-sm text-[#624A14]"><span>{error}. Sign in to view your dashboard.</span><Link href="/login" className="font-bold underline">Log in</Link></div>}
           {children({ user, role, loading, error })}
         </main>
-        <footer className="flex items-center justify-between border-t border-border px-5 py-5 text-xs text-muted sm:px-8"><span>© 2026 AgriShare Pakistan</span><Link href="/admin/login" className="hover:text-primary">Admin portal</Link></footer>
+        <footer className="flex items-center justify-between border-t border-border bg-background-paper/80 px-5 py-5 text-xs text-muted sm:px-8"><span>© 2026 AgriShare Pakistan</span><Link href="/admin/login" className="hover:text-primary">Admin portal</Link></footer>
       </div>
     </div>
   );

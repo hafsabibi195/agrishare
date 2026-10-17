@@ -50,3 +50,102 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .admin-live-user-marker span { animation: none !important; }
 }
+/* Keep Leaflet's internal z-indexes from escaping above sticky headers */
+.leaflet-container {
+  isolation: isolate;
+}
+
+/* Subtle field-furrow texture for page backgrounds */
+.bg-furrows {
+  background-image: repeating-linear-gradient(-45deg, rgba(46, 94, 58, 0.035) 0 2px, transparent 2px 14px);
+}
+
+/* Agricultural page background: soft green light, sprout + wheat motifs */
+/* Pages show the blurred field photo from the root layout (.bg-agri-blur) */
+.bg-agri {
+  background-color: transparent;
+}
+
+/* Same field photo, darkened so light text stays readable */
+.bg-agri-dark {
+  background-color: rgba(15, 23, 20, 0.82);
+}
+
+/* Rolling green field hills fixed along the bottom of the viewport */
+.agri-fields {
+  position: relative;
+  isolation: isolate;
+}
+
+.agri-fields::before {
+  content: "";
+  position: fixed;
+  inset: auto 0 0 0;
+  height: 190px;
+  z-index: -1;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 190' preserveAspectRatio='none'%3E%3Cpath d='M0 110C180 60 360 60 560 95s380 40 560 0 260-35 320-20v115H0z' fill='%23B9CFB0' fill-opacity='0.35'/%3E%3Cpath d='M0 140c220-45 420-40 640-5s420 30 600-5c80-15 150-15 200-5v65H0z' fill='%233E7550' fill-opacity='0.18'/%3E%3Cpath d='M0 170c260-30 520-25 760 0s460 15 680-10v30H0z' fill='%232E5E3A' fill-opacity='0.2'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+}
+
+@media (max-width: 640px) {
+  .agri-fields::before { height: 110px; }
+}
+
+/* Softly blurred field photo behind every page (rendered in the root layout) */
+.bg-agri-blur {
+  position: fixed;
+  inset: -24px;
+  z-index: -1;
+  pointer-events: none;
+  background: #EEF3E6 url("/images/web/field-bg.jpg") center / cover no-repeat;
+  filter: blur(4px);
+}
+
+/* Page entrance and scroll animations */
+@keyframes agri-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes agri-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: agri-fade-up 0.7s ease-out forwards;
+}
+
+.animate-float {
+  animation: agri-float 6s ease-in-out infinite;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up, .reveal { opacity: 1; transform: none; animation: none; transition: none; }
+  .animate-float { animation: none; }
+}
+
+/* Every page fades in on navigation (opacity only, so fixed and sticky elements are unaffected) */
+@keyframes agri-page-in {
+  from { opacity: 0; }
+}
+
+.page-enter {
+  animation: agri-page-in 0.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+}

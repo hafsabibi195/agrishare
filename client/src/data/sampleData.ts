@@ -28,6 +28,8 @@ export interface Equipment {
   ownerName: string;
   contactPhone?: string;
   description: string;
+  /** Owner-uploaded photos as compressed data URLs. */
+  photos?: string[];
 }
 
 export interface Booking {

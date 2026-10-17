@@ -46,7 +46,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <main className="relative grid min-h-screen place-items-center overflow-hidden bg-background-dark px-4 py-20 text-[#E8EDE6]">
+    <main className="relative grid min-h-screen place-items-center overflow-hidden bg-agri-dark px-4 py-20 text-[#E8EDE6]">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-50" style={{ backgroundImage: "linear-gradient(#17201B 1px, transparent 1px), linear-gradient(90deg, #17201B 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
       <div className="absolute left-5 top-5 sm:left-10 sm:top-8"><Brand dark admin /></div>
       <form onSubmit={submit} className="relative w-full max-w-[460px] space-y-5 rounded-3xl border border-[#26332B] bg-[#161E19] p-6 shadow-[0_30px_80px_rgba(0,0,0,.45)] sm:p-11">

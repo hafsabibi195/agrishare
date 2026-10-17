@@ -19,7 +19,7 @@ export function AdminRouteGuard({ children }: { children: React.ReactNode }) {
 
   if (isLoginPage) return children;
   if (!checked || !isAdmin) {
-    return <main className="grid min-h-screen place-items-center bg-[#0f1714] text-sm text-[#b8c7bd]">Checking administrator access…</main>;
+    return <main className="grid min-h-screen place-items-center bg-agri-dark text-sm text-[#b8c7bd]">Checking administrator access…</main>;
   }
   return children;
 }

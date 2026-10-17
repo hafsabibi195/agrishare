@@ -1,16 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, List, LocateFixed, Map as MapIcon, MapPin, Search, Tractor } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { demoUsers, type Equipment } from "@/data/sampleData";
+import { EquipmentPhoto } from "@/components/equipment-photos";
 import { LiveLocationControl } from "@/components/live-location-control";
 import { formatDistanceKm, haversineDistanceKm, type Coordinates } from "@/lib/geo";
 import { useDemoAuth } from "@/lib/demo-state";
+import { formatCoordinates, reverseGeocode } from "@/lib/reverse-geocode";
+import { farmImages } from "@/lib/equipment-images";
 
 const EquipmentMap = dynamic(() => import("@/components/maps/leaflet-map"), { ssr: false, loading: () => <div className="h-full min-h-[420px] animate-pulse bg-[#E8E6D2]" /> });
 const categories = ["All", "Tractor", "Harvester", "Sprayer", "Thresher", "Rotavator"];
@@ -30,10 +33,14 @@ export default function EquipmentNearMePage() {
   const [placeMessage, setPlaceMessage] = useState("");
   const [isSearchingPlace, setIsSearchingPlace] = useState(false);
   const [locationMessage, setLocationMessage] = useState("Finding equipment near your location…");
+  // Set when the query text is filled in by the app, so it doesn't open suggestions.
+  const skipSuggestionsRef = useRef(false);
+  const mapPickRef = useRef(0);
 
   useEffect(() => {
     const query = locationQuery.trim();
-    if (query.length < 3) {
+    if (skipSuggestionsRef.current || query.length < 3) {
+      skipSuggestionsRef.current = false;
       setPlaceSuggestions([]);
       setPlaceMessage("");
       setIsSearchingPlace(false);
@@ -65,10 +72,30 @@ export default function EquipmentNearMePage() {
 
   function selectPlace(place: PlaceSuggestion) {
     setUserLocation({ lat: Number(place.lat), lng: Number(place.lon) });
+    skipSuggestionsRef.current = true;
     setLocationQuery(place.display_name.split(",").slice(0, 2).join(","));
     setPlaceSuggestions([]);
     setPlaceMessage("");
     setLocationMessage(`Showing equipment near ${place.display_name.split(",")[0]}.`);
+  }
+
+  async function pickLocationOnMap(point: Coordinates) {
+    const pick = ++mapPickRef.current;
+    setUserLocation(point);
+    setPlaceSuggestions([]);
+    skipSuggestionsRef.current = true;
+    setLocationQuery(formatCoordinates(point));
+    setLocationMessage("Showing equipment near the point you picked.");
+    try {
+      const label = await reverseGeocode(point);
+      if (label && pick === mapPickRef.current) {
+        skipSuggestionsRef.current = true;
+        setLocationQuery(label);
+        setLocationMessage(`Showing equipment near ${label}.`);
+      }
+    } catch {
+      // Keep the coordinates as the label.
+    }
   }
 
   const requestLocation = () => {
@@ -110,17 +137,17 @@ export default function EquipmentNearMePage() {
     });
   }, [category, data.equipment, maxPrice, radius, userLocation]);
 
-  return <main className="min-h-screen overflow-hidden bg-background">
+  return <main className="bg-agri min-h-screen overflow-hidden">
     <header className="flex min-h-16 items-center justify-between gap-3 border-b border-border bg-background-paper px-5 py-2 lg:hidden"><Brand/><LiveLocationControl compact/><a href="/dashboard" className="text-sm font-semibold text-primary">Dashboard</a></header>
     <div className="grid min-h-[calc(100vh-64px)] grid-cols-1 lg:min-h-screen lg:grid-cols-[248px_440px_minmax(0,1fr)]">
-      <aside className="hidden border-r border-border bg-background-paper px-4 pb-5 pt-5 lg:block">
+      <aside className="hidden border-r border-border bg-background-paper/70 px-4 pb-5 pt-5 backdrop-blur lg:block">
         <div className="flex h-9 items-center gap-2 px-2"><MapPin size={18} className="text-primary"/><span className="text-sm font-bold">{isOwner ? "Owner account" : "Farmer account"}</span></div>
         <nav className="mt-4 flex flex-col gap-1">{(isOwner ? [["Dashboard","/dashboard"],["My equipment","/dashboard#equipment"],["List equipment","/equipment/list"],["Find equipment","/equipment/near-me"],["Booking requests","/dashboard#requests"]] : [["Dashboard","/dashboard"],["Find equipment","/equipment/near-me"]]).map(([label,href])=><a key={label} href={href} className={`rounded-[10px] px-3 py-3 text-sm ${label==="Find equipment"?"bg-primary-soft font-bold text-primary":"text-[#3E4A3C] hover:bg-white"}`}>{label}</a>)}</nav>
         <a href="/admin/login" className="mt-10 block px-3 text-xs text-muted hover:text-primary">Admin portal →</a>
       </aside>
-      <section className="flex min-h-[620px] flex-col gap-5 border-r border-border bg-background-paper p-5 sm:p-6">
+      <section className="flex min-h-[620px] flex-col gap-5 border-r border-border bg-background-paper/80 p-5 backdrop-blur sm:p-6">
         <div className="hidden lg:block"><LiveLocationControl /></div>
-        <div><p className="text-xs font-bold uppercase tracking-[0.12em] text-primary">Equipment search</p><h1 className="mt-2 font-display text-[28px] font-semibold">Equipment near you</h1><button type="button" onClick={requestLocation} className="mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-primary"><MapPin size={15} className="text-info"/>Use current location</button>{locationMessage && <p role="status" className="mt-2 text-xs leading-5 text-muted">{locationMessage}</p>}</div>
+        <div className="relative overflow-hidden rounded-2xl border border-border p-4"><img src={farmImages.hero} alt="" aria-hidden="true" className="absolute inset-0 size-full object-cover opacity-15" /><div className="relative"><p className="text-xs font-bold uppercase tracking-[0.12em] text-primary">Equipment search</p><h1 className="mt-2 font-display text-[28px] font-semibold">Equipment near you</h1><button type="button" onClick={requestLocation} className="mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-primary"><MapPin size={15} className="text-info"/>Use current location</button>{locationMessage && <p role="status" className="mt-2 text-xs leading-5 text-muted">{locationMessage}</p>}</div></div>
         <div className="relative">
           <label htmlFor="equipment-location" className="mb-2 block text-xs font-bold text-[#3E4A3C]">Search location in Pakistan</label>
           <div className="flex gap-2"><input id="equipment-location" type="text" value={locationQuery} autoComplete="off" role="combobox" aria-autocomplete="list" aria-controls="equipment-place-suggestions" aria-expanded={placeSuggestions.length > 0} onChange={(event) => { setLocationQuery(event.target.value); setUserLocation(null); setLocationMessage(""); }} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (placeSuggestions[0]) selectPlace(placeSuggestions[0]); } }} placeholder="Town, village, or address" className="h-10 min-w-0 flex-1 rounded-[10px] border border-border-strong bg-white px-3 text-sm outline-none focus:border-primary"/><button type="button" aria-label="Search location" onClick={() => placeSuggestions[0] && selectPlace(placeSuggestions[0])} disabled={!placeSuggestions.length} className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-primary text-white disabled:opacity-50"><Search size={17}/></button></div>
@@ -135,9 +162,10 @@ export default function EquipmentNearMePage() {
         <div className="flex items-center justify-between border-t border-border pt-3 text-xs text-muted"><span><strong className="text-primary-deep">{filteredEquipment.length} listings</strong>{userLocation ? ` within ${radius} km` : " matching filters"}</span><span>{userLocation ? "Nearest first" : "Available first"}</span></div>
         <div className="grid gap-3">
           {filteredEquipment.slice(0, 4).map((item) => (
-            <div key={item.id} className="rounded-2xl border border-border bg-white p-3.5 shadow-sm">
+            <div key={item.id} className="rounded-2xl border border-border bg-white p-3.5 shadow-sm transition hover:shadow-panel">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <EquipmentPhoto equipment={item} className="size-16 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold">{item.title}</p>
                   <p className="mt-1 text-xs text-muted">{item.city} · {item.category}{item.distanceKm !== null ? ` · ${formatDistanceKm(item.distanceKm)}` : ""}</p>
                 </div>
@@ -159,7 +187,7 @@ export default function EquipmentNearMePage() {
       </section>
       <section className="relative min-h-[520px] bg-[#E8E6D2] lg:min-h-0">
         <div className="absolute left-4 top-4 z-[600] flex rounded-xl bg-white p-1 shadow-panel"><button type="button" aria-pressed={view==="map"} onClick={()=>setView("map")} className={`flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${view==="map"?"bg-primary-deep text-white":"text-primary-deep"}`}><MapIcon size={15}/>Map</button><button type="button" aria-pressed={view==="list"} onClick={()=>setView("list")} className={`flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold ${view==="list"?"bg-primary-deep text-white":"text-primary-deep"}`}><List size={15}/>List</button></div>
-        {view === "map" ? <div className="absolute inset-0"><EquipmentMap equipment={filteredEquipment} userLocation={userLocation} onLocationChange={setUserLocation}/></div> : <div className="h-full min-h-[520px] overflow-y-auto bg-background-paper p-5 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><h2 className="font-display text-2xl font-semibold">Equipment listings</h2><p className="mt-1 text-sm text-muted">Rates, availability and owner contact details.</p></div><Badge variant="neutral">{filteredEquipment.length} results</Badge></div><div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">{filteredEquipment.map((item) => { const owner = demoUsers.find((candidate) => candidate.id === item.ownerId); const contactPhone = item.contactPhone ?? owner?.phone; return <article key={item.id} className="rounded-xl border border-border bg-white p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-xs text-muted">{item.category} · {item.city}{item.distanceKm !== null ? ` · ${formatDistanceKm(item.distanceKm)}` : ""}</p></div><Badge variant={item.availability === "available" ? "green" : "neutral"}>{item.availability}</Badge></div><p className="mt-3 line-clamp-2 text-sm leading-5 text-muted">{item.description}</p><div className="mt-4 flex items-center justify-between border-t border-border pt-3"><span className="text-sm font-bold">PKR {item.pricePerDay.toLocaleString()} <span className="font-normal text-muted">/ day</span></span><a href={contactPhone ? `tel:${contactPhone}` : undefined} className="text-sm font-semibold text-primary hover:underline">{contactPhone ?? "Contact owner"}</a></div><p className="mt-2 text-xs text-muted">Owner: {item.ownerName}</p></article>; })}</div></div>}
+        {view === "map" ? <div className="absolute inset-0"><EquipmentMap equipment={filteredEquipment} userLocation={userLocation} onLocationChange={setUserLocation} onMapClick={(point) => void pickLocationOnMap(point)}/></div> : <div className="h-full min-h-[520px] overflow-y-auto bg-background-paper p-5 sm:p-7"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><h2 className="font-display text-2xl font-semibold">Equipment listings</h2><p className="mt-1 text-sm text-muted">Rates, availability and owner contact details.</p></div><Badge variant="neutral">{filteredEquipment.length} results</Badge></div><div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">{filteredEquipment.map((item) => { const owner = demoUsers.find((candidate) => candidate.id === item.ownerId); const contactPhone = item.contactPhone ?? owner?.phone; return <article key={item.id} className="overflow-hidden rounded-xl border border-border bg-white transition hover:shadow-panel"><EquipmentPhoto equipment={item} className="h-36 w-full" /><div className="p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-xs text-muted">{item.category} · {item.city}{item.distanceKm !== null ? ` · ${formatDistanceKm(item.distanceKm)}` : ""}</p></div><Badge variant={item.availability === "available" ? "green" : "neutral"}>{item.availability}</Badge></div><p className="mt-3 line-clamp-2 text-sm leading-5 text-muted">{item.description}</p><div className="mt-4 flex items-center justify-between border-t border-border pt-3"><span className="text-sm font-bold">PKR {item.pricePerDay.toLocaleString()} <span className="font-normal text-muted">/ day</span></span><a href={contactPhone ? `tel:${contactPhone}` : undefined} className="text-sm font-semibold text-primary hover:underline">{contactPhone ?? "Contact owner"}</a></div><p className="mt-2 text-xs text-muted">Owner: {item.ownerName}</p></div></article>; })}</div></div>}
         <div className="pointer-events-none absolute bottom-4 left-4 z-[600] flex items-center gap-2 rounded-md bg-white/90 px-2.5 py-1.5 text-[10px] text-muted"><LocateFixed size={12}/>OpenStreetMap · use location control to center map</div>
       </section>
     </div>

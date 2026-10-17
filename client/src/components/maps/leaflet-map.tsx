@@ -2,9 +2,10 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer } from "@/components/maps/map-container";
 import { LocateFixed } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useEffect } from "react";
 import { demoEquipment, type Equipment } from "@/data/sampleData";
 import type { Coordinates } from "@/lib/geo";
@@ -34,6 +35,12 @@ function calculateDistanceKm(start: [number, number], end: [number, number]) {
 function LocateControl({ onMessage, onLocated }: { onMessage: (message: string) => void; onLocated: (point: Coordinates) => void }) {
   const map = useMap();
   const [isLocating, setIsLocating] = useState(false);
+  const controlRef = useRef<HTMLDivElement>(null);
+
+  // Keep clicks on this button from also counting as a map click.
+  useEffect(() => {
+    if (controlRef.current) L.DomEvent.disableClickPropagation(controlRef.current);
+  }, []);
 
   function locate() {
     if (!navigator.geolocation) {
@@ -58,7 +65,7 @@ function LocateControl({ onMessage, onLocated }: { onMessage: (message: string) 
   }
 
   return (
-    <div className="absolute bottom-5 right-5 z-[500]">
+    <div ref={controlRef} className="absolute bottom-5 right-5 z-[500]">
       <button id="leaflet-locate-button" onClick={locate} type="button" aria-label="Use my location" title="Use my location" className="grid size-11 place-items-center rounded-xl border border-border bg-white text-info shadow-panel hover:bg-info-soft disabled:opacity-50" disabled={isLocating}>
         <LocateFixed size={19} />
       </button>
@@ -109,7 +116,7 @@ export default function LeafletMap({
   }, [equipment, userLocation]);
 
   return (
-    <div className={`relative h-full ${compact ? "min-h-0" : "min-h-[320px]"} overflow-hidden rounded-[inherit]`}>
+    <div className={`relative h-full ${compact ? "min-h-0" : "min-h-[320px]"} overflow-hidden rounded-[inherit] ${onMapClick ? "[&_.leaflet-container]:cursor-crosshair" : ""}`}>
       <MapContainer center={userLocation ? [userLocation.lat, userLocation.lng] : [30.8138, 73.4534]} zoom={compact ? 8 : 9} scrollWheelZoom={!compact} zoomControl={!compact} className="z-0">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -119,6 +126,7 @@ export default function LeafletMap({
           <Marker key={item.id} position={[item.location.lat, item.location.lng]} icon={equipmentIcon}>
             <Popup>
               <div className="space-y-1">
+                {item.photos?.[0] && <img src={item.photos[0]} alt={item.title} className="mb-1.5 h-24 w-44 rounded-md object-cover" />}
                 <strong className="block text-sm">{item.title}</strong>
                 <span className="block text-xs text-muted">{item.city}</span>
                 <span className="block text-xs font-semibold text-primary">PKR {item.pricePerDay.toLocaleString()} / day</span>
@@ -131,6 +139,7 @@ export default function LeafletMap({
         {onMapClick && <MapPicker onMapClick={onMapClick} />}
         <LocateControl onMessage={setMessage} onLocated={(point) => onLocationChange?.(point)} />
       </MapContainer>
+      {onMapClick && <div className="pointer-events-none absolute left-1/2 top-2 z-[500] -translate-x-1/2 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-primary-deep shadow">Click the map to pick a location</div>}
       {!compact && <div className="absolute bottom-2 left-2 z-[500] rounded-md bg-white/90 px-2 py-1 text-[10px] text-muted">© OpenStreetMap contributors</div>}
       {message && <div role="status" className="absolute bottom-5 left-5 z-[500] max-w-[240px] rounded-lg bg-white px-3 py-2 text-xs shadow-panel">{message}</div>}
       {compact && <div className="pointer-events-none absolute right-4 top-4 z-[500] rounded-full bg-white px-3 py-2 text-xs font-bold shadow">Punjab · Pakistan</div>}

@@ -1,87 +1,169 @@
+"use client";
 import Link from "next/link";
-import { ArrowRight, MapPin, ShieldCheck } from "lucide-react";
-import { Brand } from "@/components/brand";
+import { useEffect } from "react";
+import {
+  ArrowRight,
+  Leaf,
+  PhoneCall,
+  Search,
+  Tractor,
+} from "lucide-react";
 import { MapPreview } from "@/components/map-preview";
+import { PublicFooter, PublicNav } from "@/components/public-nav";
 import { demoEquipment } from "@/data/sampleData";
+import { farmImages } from "@/lib/equipment-images";
 
-const steps = [
-  {
-    number: "1",
-    title: "Sign in securely",
-    description: "Log in with your password and a 6-digit code from your authenticator app."
-  },
-  {
-    number: "2",
-    title: "List or find",
-    description: "Put your equipment up for rent, or search for equipment near you."
-  },
-  {
-    number: "3",
-    title: "See it on the map",
-    description: "Every listing has a GPS location, so you can see how far it is."
-  }
+const categories = [
+  { title: "Tractors", image: farmImages.tractor, desc: "Massey Ferguson, Fiat, John Deere" },
+  { title: "Combine Harvesters", image: farmImages.harvester, desc: "Wheat and paddy harvesting" },
+  { title: "Rotavators & Cultivators", image: farmImages.cultivator, desc: "Soil tilling and land preparation" },
+  { title: "Sprayers & Pumps", image: farmImages.sprayer, desc: "Crop protection and irrigation" },
 ];
 
-export default function Home() {
+const steps = [
+  { step: "01", title: "Locate tools near you", desc: "Search by town or village to see equipment pinned on the map around your fields.", icon: Search },
+  { step: "02", title: "Call the owner directly", desc: "Talk to the owner and agree on a daily or weekly rate. No middlemen.", icon: PhoneCall },
+  { step: "03", title: "Get the field work done", desc: "Have the machine brought to your land, finish the season's work, and return it.", icon: Tractor },
+];
+
+export default function HomePage() {
+  const available = demoEquipment.filter((equipment) => equipment.availability === "available").length;
+
+  // Fade sections in as they scroll into view.
+  useEffect(() => {
+    const items = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((item) => item.classList.add("is-visible"));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#F5F1E6] text-[#1E2A1F]">
-      <header className="border-b border-[#E2DCCB] bg-[#FBF9F2]">
-        <div className="mx-auto flex min-h-20 max-w-[1440px] items-center gap-5 px-5 sm:px-8 lg:px-20">
-          <Brand className="mr-auto" />
-          <a href="#how" className="hidden text-sm font-medium hover:text-[#2E5E3A] sm:block">How it works</a>
-          <Link href="/login" className="text-sm font-semibold hover:text-[#2E5E3A]">Log in</Link>
-          <Link href="/register" className="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[#2E5E3A] px-5 text-sm font-semibold text-white transition hover:bg-[#1F4429]">Sign up</Link>
-        </div>
-      </header>
+    <div className="bg-agri flex min-h-screen flex-col">
+      <PublicNav />
 
-      <main>
-        <section className="mx-auto grid max-w-[1440px] items-center gap-6 px-5 py-6 sm:gap-9 sm:px-8 sm:py-12 lg:grid-cols-2 lg:gap-16 lg:px-20 lg:py-[72px]">
-          <div className="flex flex-col items-start gap-4 sm:gap-7">
-            <span className="rounded-full bg-[#E4EDDF] px-3.5 py-1.5 text-xs font-bold text-[#2E5E3A]">Farm equipment rental · Pakistan</span>
-            <h1 className="max-w-[650px] font-display text-[42px] font-semibold leading-[1.04] sm:text-[54px] lg:text-[62px]">Rent farm equipment near you, on the map.</h1>
-            <p className="max-w-[550px] text-base leading-7 text-[#4A5447] sm:text-lg sm:leading-8">List your tractor for rent, or find one close to your farm. AgriShare uses your location to show what’s available nearby.</p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/login" className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-[10px] bg-[#2E5E3A] px-6 text-base font-bold text-white transition hover:bg-[#1F4429]">Get started <ArrowRight size={17}/></Link>
-              <a href="#how" className="inline-flex min-h-[52px] items-center justify-center rounded-[10px] border border-[#C9C1A9] bg-white px-6 text-base font-bold transition hover:border-[#2E5E3A]">How it works</a>
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="relative overflow-hidden text-white">
+          <div className="relative mx-auto grid max-w-[1440px] items-center gap-10 px-5 py-14 sm:py-20 lg:grid-cols-12 lg:px-12 lg:py-24">
+            <div className="space-y-6 lg:col-span-7">
+              <span className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-wheat/40 bg-wheat/15 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-wheat">
+                <Leaf size={14} /> Farm equipment rental · Pakistan
+              </span>
+              <h1 style={{ animationDelay: "120ms" }} className="animate-fade-up font-display text-4xl font-semibold leading-[1.08] sm:text-5xl lg:text-6xl">
+                The right machine for every <span className="text-wheat">season</span>, right next to your fields.
+              </h1>
+              <p style={{ animationDelay: "240ms" }} className="animate-fade-up max-w-2xl text-base leading-relaxed text-[#DCE7D6] sm:text-lg">
+                Rent tractors, harvesters and sprayers from trusted owners near you, or put your idle machinery to work.
+              </p>
+              <div style={{ animationDelay: "360ms" }} className="animate-fade-up flex flex-wrap items-center gap-3 pt-2">
+                <Link href="/equipment/near-me" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-wheat px-7 text-base font-bold text-primary-deep shadow-lg shadow-black/20 transition hover:bg-[#F0C15F] active:scale-[0.98]">
+                  Find equipment <ArrowRight size={18} />
+                </Link>
+                <Link href="/register?role=owner" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 text-base font-semibold text-white backdrop-blur transition hover:bg-white/20">
+                  List your machinery
+                </Link>
+              </div>
             </div>
-          </div>
 
-          <div className="relative h-[230px] overflow-hidden rounded-2xl border border-[#D6CFBB] bg-[#E8E6D2] shadow-[0_24px_54px_rgba(30,42,31,0.12)] sm:h-[390px] lg:h-[520px] lg:rounded-[28px]">
-            <MapPreview compact equipment={demoEquipment}/>
-            <div className="pointer-events-none absolute inset-0 z-[500]" aria-hidden="true">
-              <div className="absolute left-1/2 top-1/2 size-36 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-[#2E5E3A]/80 bg-[#2E5E3A]/[0.07] sm:size-52 lg:size-[280px]"/>
-              <span className="absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-[#2E6FB0] shadow-[0_0_0_7px_rgba(46,111,176,0.2)]"/>
-              <span className="absolute left-[8%] top-[26%] rounded-full border border-[#D6CFBB] bg-white px-3 py-1.5 text-xs font-bold shadow-md sm:left-[12%] sm:top-[31%]">Nearby equipment</span>
-              <span className="absolute bottom-[22%] right-[7%] rounded-full bg-[#2E5E3A] px-3 py-1.5 text-xs font-bold text-white shadow-md sm:right-[12%]">Local listings</span>
+            <div style={{ animationDelay: "300ms" }} className="animate-fade-up lg:col-span-5">
+              <div className="animate-float rounded-3xl border border-white/20 bg-white/10 p-2.5 shadow-2xl backdrop-blur">
+                <div className="relative h-[340px] overflow-hidden rounded-2xl bg-[#E8E6D2] sm:h-[400px]">
+                  <MapPreview compact equipment={demoEquipment} />
+                  <div className="absolute inset-x-3 bottom-3 z-[500] flex items-center justify-between rounded-xl border border-border bg-white/95 px-4 py-2.5 text-primary-deep shadow-md backdrop-blur">
+                    <div className="flex items-center gap-2 text-xs font-bold">
+                      <span className="size-2.5 animate-pulse rounded-full bg-primary" />
+                      Live regional map
+                    </div>
+                    <span className="rounded-md border border-wheat/50 bg-wheat-soft px-2 py-0.5 text-[11px] font-extrabold text-[#7A5200]">
+                      {available} available now
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="absolute right-3 top-3 z-[600] flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold shadow sm:right-5 sm:top-5"><span className="size-2 rounded-full bg-[#2E6FB0]"/>Find your area</div>
-            <Link href="/equipment/near-me" aria-label="Explore nearby equipment on the map" className="absolute bottom-3 left-3 z-[600] inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold shadow transition hover:bg-[#F5F1E6] sm:bottom-5 sm:left-5 sm:px-4 sm:py-3 sm:text-sm"><MapPin size={16} className="text-[#2E5E3A]"/>Explore nearby equipment <ArrowRight size={15}/></Link>
           </div>
         </section>
 
-        <section id="how" className="border-t border-[#E2DCCB] bg-[#EEEBDD] px-5 py-12 sm:px-8 sm:py-16 lg:px-20 lg:py-20">
-          <div className="mx-auto max-w-[1280px]">
-            <h2 className="font-display text-3xl font-semibold sm:text-[42px]">How it works</h2>
-            <div className="mt-7 grid gap-3 md:mt-9 md:grid-cols-3 md:gap-5">
-              {steps.map((step) => (
-                <article key={step.number} className="flex min-h-[200px] flex-col items-start gap-3 rounded-lg border border-[#E2DCCB] bg-white p-5 sm:p-7">
-                  <span className="grid size-11 place-items-center rounded-full bg-[#2E5E3A] font-display text-xl font-semibold text-white">{step.number}</span>
-                  <h3 className="text-lg font-bold sm:text-[21px]">{step.title}</h3>
-                  <p className="text-sm leading-6 text-[#4A5447] sm:text-base">{step.description}</p>
-                </article>
+        {/* Categories */}
+        <section id="categories" className="mx-auto w-full max-w-[1440px] scroll-mt-28 space-y-10 px-5 py-16 lg:px-12 lg:py-20">
+          <div className="reveal mx-auto max-w-2xl space-y-2 text-center">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#7A5200]">Agricultural equipment</p>
+            <h2 className="font-display text-3xl font-semibold sm:text-4xl">Rent popular farming machinery</h2>
+            <p className="text-sm text-muted sm:text-base">Choose from machinery listed by trusted farm owners in your district.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {categories.map((item, index) => (
+              <div key={item.title} style={{ transitionDelay: `${index * 100}ms` }} className="reveal flex">
+              <Link href="/equipment/near-me" className="group w-full flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-panel">
+                <div className="relative h-48 overflow-hidden bg-muted-soft">
+                  <img src={item.image} alt={item.title} loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />
+                  <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-primary-deep/50 to-transparent" />
+                </div>
+                <div className="flex flex-1 flex-col justify-between gap-3 p-5">
+                  <div>
+                    <h3 className="text-lg font-bold transition group-hover:text-primary">{item.title}</h3>
+                    <p className="mt-1 text-xs text-muted">{item.desc}</p>
+                  </div>
+                  <span className="flex items-center gap-1 border-t border-border pt-3 text-xs font-bold text-primary">Browse available <ArrowRight size={14} className="transition group-hover:translate-x-0.5" /></span>
+                </div>
+              </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section id="how" className="scroll-mt-28 border-y border-[#CFE0C6] bg-primary-soft/70 px-5 py-16 lg:px-12 lg:py-20">
+          <div className="mx-auto max-w-[1440px] space-y-12">
+            <div className="reveal mx-auto max-w-xl space-y-2 text-center">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#7A5200]">Simple 3-step process</p>
+              <h2 className="font-display text-3xl font-semibold sm:text-4xl">How AgriShare works</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {steps.map(({ step, title, desc, icon: Icon }, index) => (
+                <div key={step} style={{ transitionDelay: `${index * 120}ms` }} className="reveal relative space-y-4 overflow-hidden rounded-2xl border border-border bg-white p-6">
+                  <div aria-hidden="true" className="absolute -right-8 -top-8 size-28 rounded-full bg-wheat-soft" />
+                  <div className="relative flex items-center justify-between">
+                    <span className="grid size-12 place-items-center rounded-xl bg-primary text-white shadow-sm"><Icon size={22} /></span>
+                    <span className="font-display text-3xl font-semibold text-wheat">{step}</span>
+                  </div>
+                  <h3 className="relative text-xl font-bold">{title}</h3>
+                  <p className="relative text-sm leading-relaxed text-muted">{desc}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
+
+        {/* Owners CTA */}
+        <section id="owners" className="mx-auto w-full max-w-[1440px] scroll-mt-28 px-5 pb-16 lg:px-12">
+          <div className="reveal relative flex flex-col items-start justify-between gap-8 overflow-hidden rounded-3xl bg-primary p-8 text-white shadow-panel sm:p-12 md:flex-row md:items-center">
+            <img src={farmImages.cultivator} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full object-cover" />
+            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-primary-deep via-primary-deep/85 to-primary/30" />
+            <div className="relative max-w-xl space-y-4">
+              <h2 className="font-display text-3xl font-semibold sm:text-4xl">Have equipment sitting idle?</h2>
+              <p className="text-sm text-[#DCE7D6] sm:text-base">List your tractor, rotavator or harvester on AgriShare and earn by renting to farmers nearby.</p>
+            </div>
+            <Link href="/register?role=owner" className="relative inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-wheat px-7 text-base font-bold text-primary-deep shadow-lg transition hover:bg-[#F0C15F]">
+              List your equipment <ArrowRight size={18} />
+            </Link>
+          </div>
+        </section>
+
       </main>
 
-      <footer className="bg-[#1E2A1F] px-5 py-6 text-[#B9C2B0] sm:px-8 lg:px-20">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-4 text-sm">
-          <Brand dark className="[&_span:last-child]:text-xl" />
-          <span className="mr-auto">© 2026 AgriShare</span>
-          <Link href="/admin/login" className="inline-flex items-center gap-2 hover:text-white"><ShieldCheck size={15}/>Admin</Link>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

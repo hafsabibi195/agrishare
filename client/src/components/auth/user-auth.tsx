@@ -3,36 +3,33 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDemoAuth } from "@/lib/demo-state";
+import { farmImages } from "@/lib/equipment-images";
 
 export function UserAuthFrame({ children }: { children: React.ReactNode }) {
   return (
-    <main className="grid min-h-screen bg-background lg:grid-cols-[minmax(400px,44%)_1fr]">
-      <aside className="relative hidden min-h-screen overflow-hidden bg-primary p-10 text-white lg:flex lg:flex-col lg:p-14">
-        <FieldContour />
+    <main className="grid min-h-screen bg-agri lg:grid-cols-[minmax(400px,44%)_1fr]">
+      <aside className="relative hidden min-h-screen overflow-hidden p-10 text-white lg:flex lg:flex-col lg:p-14">
         <Brand dark className="relative z-10 [&_span:nth-child(2)]:text-white" />
         <div className="relative z-10 my-auto max-w-[470px] pb-12 pt-20">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-wheat">AgriShare Pakistan</p>
           <h1 className="mt-5 font-display text-5xl font-semibold leading-[1.06]">Machinery when the season needs it.</h1>
           <p className="mt-5 text-[17px] leading-7 text-white/80">Book trusted equipment from owners near your fields, or put the machines you own to work.</p>
-          <div className="mt-8 flex flex-wrap gap-2">{["GPS near me", "Live booking updates", "Protected with 2FA"].map((text)=><span key={text} className="rounded-full bg-white/15 px-3.5 py-2 text-xs font-semibold">{text}</span>)}</div>
+          <div className="mt-8 flex flex-wrap gap-2">{["GPS near me", "Live booking updates", "Trusted local owners"].map((text)=><span key={text} className="rounded-full border border-white/20 bg-white/15 px-3.5 py-2 text-xs font-semibold backdrop-blur">{text}</span>)}</div>
         </div>
-        <p className="relative z-10 text-xs text-white/70">Built for Pakistan&apos;s fields and farming seasons.</p>
+        <div className="relative z-10 grid grid-cols-3 gap-3">{[["Tractors", farmImages.tractor], ["Harvesters", farmImages.harvester], ["Sprayers", farmImages.sprayer]].map(([label, src]) => <figure key={label} className="overflow-hidden rounded-xl border border-white/20 bg-white/10"><img src={src} alt={label} className="h-20 w-full object-cover" /><figcaption className="px-2.5 py-1.5 text-[11px] font-semibold">{label}</figcaption></figure>)}</div>
+        <p className="relative z-10 mt-5 text-xs text-white/70">Built for Pakistan&apos;s fields and farming seasons.</p>
       </aside>
-      <section className="relative flex min-h-screen items-center justify-center px-5 py-20 sm:px-8">
+      <section className="relative flex min-h-screen items-center justify-center bg-agri px-5 py-20 sm:px-8">
         <div className="absolute right-5 top-5 flex items-center gap-4 sm:right-10 sm:top-8"><Link className="text-sm font-semibold text-muted hover:text-primary" href="/admin/login">Admin portal</Link></div>
         {children}
       </section>
     </main>
   );
-}
-
-function FieldContour() {
-  return <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-45"><div className="absolute -bottom-20 -left-20 h-[48%] w-[125%] -rotate-6 rounded-[48%] border-t-2 border-[#78A67C]"/><div className="absolute -bottom-28 -left-20 h-[48%] w-[125%] -rotate-6 rounded-[48%] border-t-2 border-[#78A67C]"/><div className="absolute -bottom-36 -left-20 h-[48%] w-[125%] -rotate-6 rounded-[48%] border-t-2 border-[#78A67C]"/><div className="absolute right-12 top-24 size-28 rounded-full bg-wheat/90"/></div>;
 }
 
 export function LoginForm() {
@@ -50,8 +47,8 @@ export function LoginForm() {
     try {
       const email = String(form.get("email") ?? "");
       const password = String(form.get("password") ?? "");
-      const result = login(email, password, "user");
-      router.push(result.requiresTwoFactor ? "/verify-2fa" : "/dashboard");
+      login(email, password, "user");
+      router.push("/dashboard");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to log in right now.");
     } finally {
@@ -116,49 +113,6 @@ export function RegisterForm({ initialRole = "farmer" }: { initialRole?: "farmer
       <p className="text-center text-sm text-muted">Already registered? <Link href="/login" className="font-bold text-primary">Log in</Link></p>
       <p className="text-center text-xs text-muted">By creating an account, you agree to our <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
     </form></UserAuthFrame>
-  );
-}
-
-export function VerifyTwoFactorForm() {
-  const router = useRouter();
-  const { verifyTwoFactor } = useDemoAuth();
-  const [code, setCode] = useState("");
-  const [backup, setBackup] = useState(false);
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    setIsSubmitting(true);
-    try {
-      verifyTwoFactor(code);
-      router.push("/dashboard");
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not verify this code.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  return (
-    <main className="relative flex min-h-screen items-center justify-center bg-background px-4 py-20">
-      <div className="absolute left-5 top-5"><Brand /></div>
-      <form onSubmit={submit} className="w-full max-w-[520px] rounded-[26px] border border-border bg-white p-6 text-center shadow-panel sm:p-12">
-        <span className="mx-auto grid size-[68px] place-items-center rounded-full bg-primary-soft text-primary"><ShieldCheck size={34}/></span>
-        <p className="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-primary">Account security</p>
-        <h1 className="mt-2 font-display text-3xl font-semibold sm:text-[34px]">Two-step verification</h1>
-        <p className="mt-3 text-sm leading-6 text-muted">Enter your six-digit verification code to continue.</p>
-        <label htmlFor="verification-code" className="sr-only">{backup ? "Backup code" : "Six-digit code"}</label>
-        <Input id="verification-code" autoFocus inputMode={backup?"text":"numeric"} autoComplete="one-time-code" maxLength={backup?10:6} value={code} onChange={(event)=>setCode(event.target.value.replace(backup?/[^a-fA-F0-9]/g:/\D/g, "").slice(0,backup?10:6))} placeholder={backup?"Backup code":"000000"} className="mt-7 h-[66px] text-center font-display text-3xl font-semibold tracking-[0.35em]" required />
-        <div className="mt-3 flex justify-center gap-2" aria-hidden="true">{Array.from({length:6},(_,index)=><span key={index} className={`h-1.5 w-8 rounded-full ${code.length>index?"bg-primary":"bg-muted-soft"}`}/>)}</div>
-        <label className="mt-6 flex items-center justify-center gap-2 text-sm text-muted"><input type="checkbox" className="size-4 accent-primary"/>Trust this device for 30 days</label>
-        {error && <div className="mt-5"><ErrorNotice message={error}/></div>}
-        <Button type="submit" disabled={isSubmitting || code.length < (backup?10:6)} className="mt-6 h-[52px] w-full text-base">{isSubmitting?<LoaderCircle className="animate-spin" size={18}/>:<Check size={18}/>}Verify and continue</Button>
-        <button type="button" onClick={()=>{setBackup(!backup);setCode("");setError("");}} className="mt-5 text-sm font-semibold text-primary hover:underline">{backup?"Use an authenticator code":"Use a backup code instead"}</button>
-        <Link href="/login" className="mt-7 flex items-center justify-center gap-2 text-sm text-muted hover:text-primary"><ArrowLeft size={15}/>Back to log in</Link>
-      </form>
-    </main>
   );
 }
 

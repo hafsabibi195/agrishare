@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useState } from "react";
-import { ArrowRight, LocateFixed, LogOut, MapPin, Phone, Search, UserRound } from "lucide-react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
+import { ArrowRight, Camera, CloudSun, Leaf, LocateFixed, LogOut, MapPin, Phone, Search, Sprout, Tractor, UserRound, Wheat, X } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { MapPreview } from "@/components/map-preview";
 import { demoEquipment, type EquipmentCategory } from "@/data/sampleData";
 import { useDemoAuth } from "@/lib/demo-state";
+import { farmImages } from "@/lib/equipment-images";
+import { MAX_LISTING_PHOTOS, compressPhoto } from "@/lib/photo-upload";
+import { formatCoordinates, reverseGeocode } from "@/lib/reverse-geocode";
+import type { Coordinates } from "@/lib/geo";
 
 const categories: EquipmentCategory[] = ["Tractor", "Harvester", "Sprayer", "Thresher", "Rotavator"];
 
@@ -43,6 +47,10 @@ export default function DashboardPage() {
   const [isSuggestingLocation, setIsSuggestingLocation] = useState(false);
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [error, setError] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const mapPickRef = useRef(0);
+  const [photoMessage, setPhotoMessage] = useState("");
+  const [isProcessingPhotos, setIsProcessingPhotos] = useState(false);
   const firstName = user?.name?.trim().split(/\s+/)[0];
   const previewEquipment = data.equipment.length ? data.equipment : demoEquipment;
 
@@ -104,6 +112,23 @@ export default function DashboardPage() {
     );
   }
 
+  async function pickLocationOnMap(point: Coordinates) {
+    const pick = ++mapPickRef.current;
+    setLocationMode("search");
+    setCoordinates(point);
+    setLocationSuggestions([]);
+    setLocation(formatCoordinates(point));
+    setLocationMessage("Location pinned on the map. Finding the place name…");
+    try {
+      const label = await reverseGeocode(point);
+      if (pick !== mapPickRef.current) return;
+      if (label) setLocation(label);
+      setLocationMessage("Location pinned on the map.");
+    } catch {
+      if (pick === mapPickRef.current) setLocationMessage("Location pinned on the map.");
+    }
+  }
+
   async function searchLocation() {
     const query = location.trim();
     if (!query) {
@@ -134,6 +159,27 @@ export default function DashboardPage() {
       setLocationMessage(searchError instanceof Error ? searchError.message : "Could not search for this location.");
     } finally {
       setIsSearchingLocation(false);
+    }
+  }
+
+  async function addPhotos(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (!files.length) return;
+    const room = MAX_LISTING_PHOTOS - photos.length;
+    if (room <= 0) {
+      setPhotoMessage(`You can add up to ${MAX_LISTING_PHOTOS} photos.`);
+      return;
+    }
+    setIsProcessingPhotos(true);
+    setPhotoMessage(files.length > room ? `Only the first ${room} photo${room === 1 ? "" : "s"} were added (limit ${MAX_LISTING_PHOTOS}).` : "");
+    try {
+      const added = await Promise.all(files.slice(0, room).map((file) => compressPhoto(file)));
+      setPhotos((current) => [...current, ...added].slice(0, MAX_LISTING_PHOTOS));
+    } catch (photoError) {
+      setPhotoMessage(photoError instanceof Error ? photoError.message : "Could not add the photo.");
+    } finally {
+      setIsProcessingPhotos(false);
     }
   }
 
@@ -194,7 +240,8 @@ export default function DashboardPage() {
       availability: "available",
       status: "available",
       rating: 0,
-      description: `${String(form.get("condition"))} condition. ${String(form.get("description") ?? "").trim()}`
+      description: `${String(form.get("condition"))} condition. ${String(form.get("description") ?? "").trim()}`,
+      photos
     });
     router.push("/equipment/near-me");
   }
@@ -204,36 +251,73 @@ export default function DashboardPage() {
     router.push("/login");
   }
 
-  return <div className="min-h-screen bg-[#F5F1E6] text-[#1E2A1F]">
-    <header className="flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-[#E2DCCB] bg-[#FBF9F2] px-4 py-3 sm:px-7 lg:px-12">
+  const availableCount = previewEquipment.filter((equipment) => equipment.availability === "available").length;
+  const myListings = user ? data.equipment.filter((equipment) => equipment.ownerId === user.id).length : 0;
+
+  return <div className="bg-agri agri-fields min-h-screen text-[#1E2A1F]">
+    <header className="sticky top-0 z-[1000] flex min-h-[72px] flex-wrap items-center justify-between gap-4 border-b border-[#E2DCCB] bg-[#FBF9F2]/95 px-4 py-3 backdrop-blur sm:px-7 lg:px-12">
       <Brand className="shrink-0 text-[#1E2A1F]" />
-      <div className="ml-auto flex items-center gap-3 sm:gap-5">
+      <nav className="hidden items-center gap-1 text-sm font-semibold md:flex">
+        <Link href="/dashboard" className="rounded-lg bg-[#E4EDDF] px-3 py-2 text-[#2E5E3A]">Dashboard</Link>
+        <Link href="/equipment/near-me" className="rounded-lg px-3 py-2 text-[#3E4A3C] hover:bg-[#E4EDDF]">Find equipment</Link>
+        <Link href="/" className="rounded-lg px-3 py-2 text-[#3E4A3C] hover:bg-[#E4EDDF]">Home</Link>
+      </nav>
+      <div className="ml-auto flex items-center gap-3 sm:gap-5 md:ml-0">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#2E5E3A] text-sm font-bold text-white">{user?.name?.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() ?? <UserRound size={18}/>}</span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#2E5E3A] text-sm font-bold text-white ring-2 ring-[#E3B04B]/60 ring-offset-2 ring-offset-[#FBF9F2]">{user?.name?.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() ?? <UserRound size={18}/>}</span>
           <span className="hidden max-w-[180px] truncate text-sm font-bold sm:block">{user?.name ?? "Guest"}</span>
         </div>
-        <button type="button" onClick={handleLogout} className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-[#D6CFBB] px-3 text-sm font-semibold hover:bg-white" aria-label="Log out"><LogOut size={16}/><span className="hidden sm:inline">Log out</span></button>
+        <button type="button" onClick={handleLogout} className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-[#D6CFBB] bg-white px-3 text-sm font-semibold hover:bg-[#FBF9F2]" aria-label="Log out"><LogOut size={16}/><span className="hidden sm:inline">Log out</span></button>
       </div>
     </header>
 
     <main className="mx-auto flex max-w-[1440px] flex-col gap-7 px-4 py-8 sm:px-7 sm:py-10 lg:px-12 xl:px-20">
-      <div>
-        <h1 className="font-display text-3xl font-semibold sm:text-[40px]">Welcome{firstName ? `, ${firstName}` : ""}</h1>
-        <p className="mt-1.5 text-base text-[#5B6457] sm:text-lg">What would you like to do?</p>
-      </div>
+      {!user && <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E3B04B]/50 bg-[#FFF1D6] px-4 py-3 text-sm text-[#624A14]"><span>You are browsing as a guest. Log in to publish listings.</span><Link href="/login" className="font-bold underline">Log in</Link></div>}
+
+      <section className="relative overflow-hidden rounded-3xl bg-[#1E2A1F] text-white shadow-[0_18px_48px_rgba(30,42,31,0.18)]">
+        <img src={farmImages.hero} alt="" aria-hidden="true" className="absolute inset-0 size-full object-cover" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#1E2A1F] via-[#1E2A1F]/85 to-[#2E5E3A]/30" />
+        <div className="relative flex flex-col gap-6 p-6 sm:p-9 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-xl">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#E3B04B]/40 bg-[#E3B04B]/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#F2CD7A]"><Wheat size={14}/>Rabi season · wheat sowing</p>
+            <h1 className="mt-4 font-display text-3xl font-semibold sm:text-[42px] sm:leading-[1.1]">Welcome{firstName ? `, ${firstName}` : ""}</h1>
+            <p className="mt-2 text-base text-[#DCE7D6] sm:text-lg">List your machinery for rent, or find equipment near your fields.</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 sm:min-w-[420px]">
+            {[
+              { label: "Available nearby", value: availableCount, icon: Tractor },
+              { label: "Your listings", value: myListings, icon: Sprout },
+              { label: "Categories", value: categories.length, icon: Leaf }
+            ].map(({ label, value, icon: Icon }) => <div key={label} className="rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur"><Icon size={18} className="text-[#F2CD7A]"/><p className="mt-2 font-display text-2xl font-semibold">{value}</p><p className="text-[11px] leading-4 text-[#DCE7D6]">{label}</p></div>)}
+          </div>
+        </div>
+      </section>
+
+      <section aria-label="Browse by category" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: "Tractors", image: farmImages.tractor },
+          { label: "Harvesters", image: farmImages.harvester },
+          { label: "Sprayers", image: farmImages.sprayer },
+          { label: "Rotavators", image: farmImages.cultivator }
+        ].map((item) => <Link key={item.label} href="/equipment/near-me" className="group relative h-28 overflow-hidden rounded-2xl border border-[#E2DCCB] shadow-sm sm:h-32">
+          <img src={item.image} alt={item.label} loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105"/>
+          <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#1E2A1F]/80 via-[#1E2A1F]/10 to-transparent"/>
+          <span className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-sm font-bold text-white">{item.label}<ArrowRight size={16} className="transition group-hover:translate-x-0.5"/></span>
+        </Link>)}
+      </section>
 
       <div className="grid items-start gap-6 xl:grid-cols-[1.5fr_1fr] xl:gap-7">
-        <section className="flex flex-col gap-6 rounded-2xl border-2 border-[#2E5E3A] bg-white p-5 sm:p-7 lg:p-8" aria-labelledby="listing-heading">
-          <div><p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7A5200]">Option 1</p><h2 id="listing-heading" className="mt-1 font-display text-2xl font-semibold sm:text-[30px]">List your equipment for rent</h2></div>
+        <section className="flex flex-col gap-6 overflow-hidden rounded-2xl border border-[#E2DCCB] bg-white p-5 shadow-[0_18px_48px_rgba(30,42,31,0.09)] sm:p-7 lg:p-8" aria-labelledby="listing-heading">
+          <div className="-mx-5 -mt-5 flex items-center gap-4 border-b border-[#E2DCCB] bg-[#E4EDDF] px-5 py-4 sm:-mx-7 sm:-mt-7 sm:px-7 lg:-mx-8 lg:-mt-8 lg:px-8"><span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#2E5E3A] text-white"><Tractor size={24}/></span><div><p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7A5200]">Option 1 · For owners</p><h2 id="listing-heading" className="mt-0.5 font-display text-2xl font-semibold sm:text-[28px]">List your equipment for rent</h2></div></div>
           <form onSubmit={publishListing} className="flex flex-col gap-6">
             <section className="flex flex-col gap-3" aria-labelledby="location-heading">
-              <h3 id="location-heading" className="text-base font-bold">1. Location</h3>
+              <h3 id="location-heading" className="flex items-center gap-2 text-base font-bold"><StepDot n={1}/>Location</h3>
               <div role="group" aria-label="Location mode" className="grid grid-cols-1 gap-1 rounded-[10px] bg-[#F1EDE0] p-1 sm:grid-cols-2">
                 <button type="button" aria-pressed={locationMode === "current"} onClick={useCurrentLocation} className={`min-h-10 rounded-lg px-2 text-sm font-semibold ${locationMode === "current" ? "bg-white text-[#2E5E3A] shadow-sm" : "hover:bg-white/60"}`}><LocateFixed size={15} className="mr-1.5 inline"/>Use my location</button>
                 <button type="button" aria-pressed={locationMode === "search"} onClick={() => { setLocationMode("search"); setLocationMessage(""); }} className={`min-h-10 rounded-lg px-2 text-sm font-semibold ${locationMode === "search" ? "bg-white text-[#2E5E3A] shadow-sm" : "hover:bg-white/60"}`}><Search size={15} className="mr-1.5 inline"/>Search location</button>
               </div>
               <div className="relative h-[170px] overflow-hidden rounded-xl border border-[#E2DCCB] bg-[#E8E6D2]">
-                <MapPreview compact equipment={previewEquipment} userLocation={coordinates} />
+                <MapPreview compact equipment={previewEquipment} userLocation={coordinates} onMapClick={(point) => void pickLocationOnMap(point)} />
               </div>
               <div className="flex flex-col gap-2 text-sm text-[#3E4A3C]">
                 <div className="flex gap-2">
@@ -253,7 +337,7 @@ export default function DashboardPage() {
             </section>
 
             <section className="flex flex-col gap-3" aria-labelledby="price-heading">
-              <h3 id="price-heading" className="text-base font-bold">2. Price</h3>
+              <h3 id="price-heading" className="flex items-center gap-2 text-base font-bold"><StepDot n={2}/>Price</h3>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">Per day (Rs)<input name="pricePerDay" type="number" min="1" step="any" placeholder="Enter your price" required className="h-12 rounded-[10px] border border-[#C9C1A9] px-3.5 text-base font-bold outline-none focus:border-[#2E5E3A]"/></label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">Per week (Rs)<input type="number" min="1" step="any" placeholder="Enter your price" className="h-12 rounded-[10px] border border-[#C9C1A9] px-3.5 text-base font-bold outline-none focus:border-[#2E5E3A]"/></label>
@@ -261,7 +345,7 @@ export default function DashboardPage() {
             </section>
 
             <section className="flex flex-col gap-3" aria-labelledby="description-heading">
-              <h3 id="description-heading" className="text-base font-bold">3. Description</h3>
+              <h3 id="description-heading" className="flex items-center gap-2 text-base font-bold"><StepDot n={3}/>Description</h3>
               <label className="flex flex-col gap-1.5 text-sm font-semibold">Equipment name<input name="title" type="text" placeholder="Optional, e.g. Massey Ferguson 385" className="h-12 rounded-[10px] border border-[#C9C1A9] px-3.5 text-sm font-medium outline-none focus:border-[#2E5E3A]"/></label>
               <div className="grid gap-3 sm:grid-cols-3">
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">Type<select name="category" className="h-12 rounded-[10px] border border-[#C9C1A9] bg-white px-3 text-sm"><option>{categories[0]}</option>{categories.slice(1).map((category) => <option key={category}>{category}</option>)}</select></label>
@@ -271,22 +355,53 @@ export default function DashboardPage() {
               <label className="flex flex-col gap-1.5 text-sm font-semibold">Details<textarea name="description" rows={2} placeholder="Add useful details for nearby farmers" className="resize-y rounded-[10px] border border-[#C9C1A9] px-3.5 py-3 text-sm font-medium outline-none focus:border-[#2E5E3A]"/></label>
             </section>
 
-            <section className="flex flex-col gap-2 rounded-xl bg-[#F5F1E6] p-4" aria-labelledby="contact-heading">
+            <section className="flex flex-col gap-3" aria-labelledby="photos-heading">
+              <h3 id="photos-heading" className="flex items-center gap-2 text-base font-bold"><StepDot n={4}/>Photos</h3>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {photos.map((photo, index) => <div key={index} className="relative aspect-[4/3] overflow-hidden rounded-xl border border-[#E2DCCB] bg-[#F1EDE0]">
+                  <img src={photo} alt={`Equipment photo ${index + 1}`} className="size-full object-cover"/>
+                  {index === 0 && <span className="absolute left-1.5 top-1.5 rounded-full bg-[#2E5E3A] px-2 py-0.5 text-[10px] font-bold text-white">Cover</span>}
+                  <button type="button" onClick={() => setPhotos((current) => current.filter((_, photoIndex) => photoIndex !== index))} aria-label={`Remove photo ${index + 1}`} className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-black/60 text-white hover:bg-black/80"><X size={14}/></button>
+                </div>)}
+                {photos.length < MAX_LISTING_PHOTOS && <label className={`flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#C9C1A9] bg-[#FBF9F2] text-center text-xs font-semibold text-[#3E4A3C] transition hover:border-[#2E5E3A] hover:text-[#2E5E3A] ${isProcessingPhotos ? "pointer-events-none opacity-60" : ""}`}>
+                  <Camera size={22}/>{isProcessingPhotos ? "Adding…" : "Add photos"}
+                  <input type="file" accept="image/*" multiple onChange={(event) => void addPhotos(event)} className="sr-only"/>
+                </label>}
+              </div>
+              <span className="text-xs text-[#5B6457]">{photoMessage || `Optional. Up to ${MAX_LISTING_PHOTOS} photos; the first one is shown as the cover.`}</span>
+            </section>
+
+            <section className="flex flex-col gap-2 rounded-xl border border-dashed border-[#C9C1A9] bg-[#FBF9F2] p-4" aria-labelledby="contact-heading">
               <h3 id="contact-heading" className="text-sm font-bold">Contact information</h3>
               <label className="flex flex-col gap-1.5 text-sm font-semibold">Contact number<input name="contactPhone" type="tel" defaultValue={user?.phone ?? ""} placeholder="e.g. +92 300 1234567" autoComplete="tel" required className="h-12 rounded-[10px] border border-[#C9C1A9] bg-white px-3.5 text-sm font-medium outline-none focus:border-[#2E5E3A]"/><span className="inline-flex items-center gap-1.5 text-xs font-normal text-[#5B6457]"><Phone size={14} className="text-[#2E5E3A]"/>Farmers can use this number to contact you about the listing.</span></label>
             </section>
 
             {error && <p role="alert" className="text-sm font-medium text-red-700">{error}</p>}
-            <button type="submit" disabled={isSearchingLocation} className="min-h-[52px] self-start rounded-[10px] bg-[#2E5E3A] px-7 text-base font-bold text-white transition hover:bg-[#1F4429] disabled:cursor-wait disabled:opacity-60">{isSearchingLocation ? "Finding location…" : "Publish listing"}</button>
+            <button type="submit" disabled={isSearchingLocation || isProcessingPhotos} className="inline-flex min-h-[52px] items-center gap-2 self-start rounded-[10px] bg-[#2E5E3A] px-7 text-base font-bold text-white shadow-md shadow-[#2E5E3A]/20 transition hover:bg-[#1F4429] disabled:cursor-wait disabled:opacity-60"><Sprout size={18}/>{isSearchingLocation ? "Finding location…" : "Publish listing"}</button>
           </form>
         </section>
 
-        <section className="flex flex-col gap-5 rounded-2xl bg-[#2E5E3A] p-5 text-white shadow-[0_16px_40px_rgba(30,42,31,0.18)] sm:p-7" aria-labelledby="find-heading">
-          <div className="relative h-[220px] overflow-hidden rounded-xl bg-[#E8E6D2]"><MapPreview compact equipment={previewEquipment}/><span className="absolute bottom-3 left-3 z-[500] rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#1E2A1F] shadow">{data.equipment.filter((equipment) => equipment.availability === "available").length} available nearby</span></div>
-          <div><p className="text-xs font-bold uppercase tracking-[0.08em] text-[#F2CD7A]">Option 2</p><h2 id="find-heading" className="mt-2 font-display text-3xl font-semibold">Find equipment</h2><p className="mt-2 text-base leading-6 text-[#DCE7D6]">See available tractors, harvesters and more near you.</p></div>
-          <Link href="/equipment/near-me" className="inline-flex min-h-[50px] items-center gap-2 self-start rounded-[10px] bg-[#E3B04B] px-5 text-base font-bold text-[#1E2A1F] transition hover:bg-[#F0C15F]">Find equipment <ArrowRight size={18}/></Link>
-        </section>
+        <div className="flex flex-col gap-6">
+          <section className="relative flex flex-col gap-5 overflow-hidden rounded-2xl bg-[#2E5E3A] p-5 text-white shadow-[0_16px_40px_rgba(30,42,31,0.18)] sm:p-7" aria-labelledby="find-heading">
+            <div className="relative h-[220px] overflow-hidden rounded-xl bg-[#E8E6D2]"><MapPreview compact equipment={previewEquipment}/><span className="absolute bottom-3 left-3 z-[500] rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#1E2A1F] shadow">{availableCount} available nearby</span></div>
+            <div><p className="text-xs font-bold uppercase tracking-[0.08em] text-[#F2CD7A]">Option 2 · For farmers</p><h2 id="find-heading" className="mt-2 font-display text-3xl font-semibold">Find equipment</h2><p className="mt-2 text-base leading-6 text-[#DCE7D6]">See available tractors, harvesters and more near you.</p></div>
+            <Link href="/equipment/near-me" className="inline-flex min-h-[50px] items-center gap-2 self-start rounded-[10px] bg-[#E3B04B] px-5 text-base font-bold text-[#1E2A1F] transition hover:bg-[#F0C15F]">Find equipment <ArrowRight size={18}/></Link>
+          </section>
+
+          <section className="overflow-hidden rounded-2xl border border-[#E2DCCB] bg-white" aria-labelledby="season-heading">
+            <img src={farmImages.harvester} alt="Combine harvester in a wheat field" loading="lazy" className="h-40 w-full object-cover"/>
+            <div className="p-5">
+              <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#7A5200]"><CloudSun size={14}/>Season tip</p>
+              <h2 id="season-heading" className="mt-1.5 font-display text-xl font-semibold">Plan ahead for harvest</h2>
+              <p className="mt-1.5 text-sm leading-6 text-[#5B6457]">Harvesters book out fast in April and October. Contact owners two weeks before your crop is ready.</p>
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   </div>;
+}
+
+function StepDot({ n }: { n: number }) {
+  return <span className="grid size-6 place-items-center rounded-full bg-[#E3B04B] text-xs font-bold text-[#1E2A1F]">{n}</span>;
 }

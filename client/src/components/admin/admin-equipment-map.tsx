@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { Circle, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { Circle, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer } from "@/components/maps/map-container";
 import L from "leaflet";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Search, UserRound } from "lucide-react";

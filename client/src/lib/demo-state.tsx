@@ -132,7 +132,12 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   }, [auth.currentUser?.role]);
 
   useEffect(() => {
-    window.localStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(data));
+    try {
+      window.localStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      // Photos can push the demo data past the browser's storage quota.
+      console.warn("Could not save AgriShare data locally.", error);
+    }
   }, [data]);
 
   const login = (email: string, password: string, target: DemoRoleTarget = "user") => {
@@ -151,7 +156,7 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
       throw new Error("Please use the admin portal.");
     }
 
-    if (target === "admin" || account.twoFactorEnabled) {
+    if (target === "admin") {
       setAuth({ currentUser: null, pendingLoginEmail: account.email, lastActivityAt: null });
       return { requiresTwoFactor: true };
     }

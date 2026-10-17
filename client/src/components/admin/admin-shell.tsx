@@ -25,7 +25,7 @@ export function AdminShell({ children, title, mapDashboard = false }: { children
   }, [auth.currentUser, router]);
 
   return (
-    <div className={`min-h-screen ${mapDashboard ? "bg-[#f4f3ed] text-[#1e2a1f]" : "bg-[#0f1714] text-[#edf3ee]"}`}>
+    <div className={`min-h-screen ${mapDashboard ? "bg-agri text-[#1e2a1f]" : "bg-agri-dark text-[#edf3ee]"}`}>
       {!mapDashboard && <aside className="fixed inset-y-0 left-0 z-20 hidden w-[248px] flex-col border-r border-[#1d2c26] bg-[#121c18] p-4 lg:flex">
         <div className="flex h-14 items-center px-2 text-lg font-semibold text-white">AgriShare</div>
         <nav className="mt-4 space-y-1">

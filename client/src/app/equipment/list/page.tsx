@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { demoCities, demoEquipment, type EquipmentCategory } from "@/data/sampleData";
 import { useDemoAuth } from "@/lib/demo-state";
+import { farmImages } from "@/lib/equipment-images";
 
 const categories: EquipmentCategory[] = ["Tractor", "Harvester", "Sprayer", "Thresher", "Rotavator"];
 
@@ -49,7 +50,7 @@ function ListingForm({ user }: { user: ReturnType<typeof useDemoAuth>["auth"]["c
 
   return <section className="mx-auto max-w-[680px]">
     <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-primary"><ArrowLeft size={16}/>Dashboard</Link>
-    <div className="mt-5"><p className="text-xs font-bold uppercase tracking-[0.12em] text-primary">Equipment owner</p><h1 className="mt-2 font-display text-3xl font-semibold">List equipment</h1><p className="mt-2 text-sm text-muted">Add your machine, daily rate and availability for local farmers.</p></div>
+    <div className="relative mt-5 overflow-hidden rounded-2xl bg-primary-deep p-6 text-white"><img src={farmImages.tractor} alt="" aria-hidden="true" className="absolute inset-0 size-full object-cover"/><div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-primary-deep via-primary-deep/85 to-transparent"/><div className="relative"><p className="text-xs font-bold uppercase tracking-[0.12em] text-wheat">Equipment owner</p><h1 className="mt-2 font-display text-3xl font-semibold">List equipment</h1><p className="mt-2 max-w-sm text-sm text-[#DCE7D6]">Add your machine, daily rate and availability for local farmers.</p></div></div>
     <form onSubmit={submit} className="mt-6 space-y-4 rounded-xl border border-border bg-white p-5 sm:p-7">
       <label className="block space-y-2 text-sm font-semibold">Equipment name<Input name="title" placeholder="e.g. Massey Ferguson 385" minLength={3} required /></label>
       <div className="grid gap-4 sm:grid-cols-2">

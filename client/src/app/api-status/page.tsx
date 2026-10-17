@@ -2,7 +2,7 @@
 
 export default function ApiStatusPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F3F2EC] px-6 text-[#1E2A1F]">
+    <main className="flex min-h-screen items-center justify-center bg-agri px-6 text-[#1E2A1F]">
       <section className="w-full max-w-lg rounded-2xl border border-[#DEDBCF] bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2E7D46]">AgriShare</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">Application status</h1>
